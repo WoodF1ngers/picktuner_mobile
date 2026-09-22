@@ -83,6 +83,7 @@ dependencies:
   # Gestión de estado reactivo
 
   flutter_riverpod: ^2.5.1
+  audioplayers: ^6.0.0
 
 
 
@@ -125,6 +126,9 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 
 flutter:
+  assets:
+    - assets/sounds/tick_accent.wav
+    - assets/sounds/tick_normal.wav
 
 
 

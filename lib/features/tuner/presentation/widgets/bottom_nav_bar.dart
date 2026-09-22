@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
+  final ValueChanged<int> onTap;
 
   const BottomNavBar({
     super.key,
@@ -20,7 +20,7 @@ class BottomNavBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.06),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -51,12 +51,14 @@ class BottomNavBar extends StatelessWidget {
     required String label,
   }) {
     final bool isSelected = currentIndex == index;
-    final Color activeColor = const Color(0xFF6C5CE7);
-    final Color inactiveColor = const Color(0xFF94A3B8);
+    const Color activeColor = Color(0xFF6C5CE7);
+    const Color inactiveColor = Color(0xFF94A3B8);
 
     return InkWell(
       onTap: () => onTap(index),
       borderRadius: BorderRadius.circular(20),
+      splashColor: activeColor.withValues(alpha: 0.1),
+      highlightColor: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(

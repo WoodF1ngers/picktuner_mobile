@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/models/tuning_status.dart';
 import '../providers/tuner_provider.dart';
-import '../widgets/bottom_nav_bar.dart';
+// import '../widgets/bottom_nav_bar.dart';
 import '../widgets/guitar_headstock_widget.dart';
 import '../widgets/tuning_pick_gauge.dart';
+import '../providers/tuner_settings_provider.dart';
+import '../screens/tuner_settings_screen.dart';
 
 class TunerScreen extends ConsumerStatefulWidget {
   const TunerScreen({super.key});
@@ -15,7 +17,7 @@ class TunerScreen extends ConsumerStatefulWidget {
 }
 
 class _TunerScreenState extends ConsumerState<TunerScreen> {
-  int _currentNavIndex = 0;
+  // int _currentNavIndex = 0;
 
   @override
   void initState() {
@@ -61,6 +63,18 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
   Widget build(BuildContext context) {
     final tunerState = ref.watch(tunerProvider);
     final currentNoteModel = tunerState.currentNote;
+    final appliedTuning = ref.watch(tunerSettingsProvider).appliedTuning;
+    final appliedTuningShortLabel = appliedTuning.displayLabel
+        .split(' (')
+        .first;
+    final List<String> stringLabels = List.generate(6, (i) {
+      final number = i + 1;
+      final tunedString = appliedTuning.strings.firstWhere(
+        (s) => s.number == number,
+        orElse: () => appliedTuning.strings.first,
+      );
+      return tunedString.displayName;
+    });
 
     final String displayNote = _getNoteInSpanish(currentNoteModel?.name);
     final String octaveNotation = currentNoteModel != null
@@ -132,40 +146,49 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Text(
-                              'Guitarra 6 cuerdas',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w600,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const TunerSettingsScreen(),
                               ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right,
-                              size: 16,
-                              color: Color(0xFF94A3B8),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF4F2FF),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'Estándar',
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Guitarra 6 cuerdas',
                                 style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF5A48D9),
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                          ],
+                              const Icon(
+                                Icons.chevron_right,
+                                size: 16,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF4F2FF),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  appliedTuningShortLabel,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF5A48D9),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -378,6 +401,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                   children: [
                     GuitarHeadstockWidget(
                       activeStringNumber: tunerState.activeStringNumber,
+                      stringLabels: stringLabels,
                       onSelectString: (stringNum) {
                         ref
                             .read(tunerProvider.notifier)
@@ -405,16 +429,17 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 55),
 
-              // --- BARRA DE NAVEGACIÓN INFERIOR ---
-              BottomNavBar(
-                currentIndex: _currentNavIndex,
-                onTap: (index) {
-                  setState(() {
-                    _currentNavIndex = index;
-                  });
-                },
-              ),
+              // // --- BARRA DE NAVEGACIÓN INFERIOR ---
+              // BottomNavBar(
+              //   currentIndex: _currentNavIndex,
+              //   onTap: (index) {
+              //     setState(() {
+              //       _currentNavIndex = index;
+              //     });
+              //   },
+              // ),
             ],
           ),
         ),

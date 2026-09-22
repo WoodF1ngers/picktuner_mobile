@@ -34,6 +34,16 @@ class AudioPitchService {
 
   static const int _historySize = 3;
 
+  // El análisis de pitch (autocorrelación sobre 2048 muestras) corre en el
+  // hilo principal de la UI. Ejecutarlo en cada chunk (20-40 veces/seg)
+  // satura ese hilo y compite con el renderizado de frames, lo que
+  // finalmente se manifiesta como el congelamiento de la app. Limitamos el
+  // análisis real a ~10 veces por segundo; es más que suficiente para un
+  // afinador y reduce drásticamente el trabajo de CPU/GC en el hilo de UI.
+  DateTime _lastAnalysis = DateTime.fromMillisecondsSinceEpoch(0);
+
+  static const Duration _analysisInterval = Duration(milliseconds: 90);
+
   AudioPitchService() {
     _pitchDetector = PitchDetector(
       audioSampleRate: sampleRate.toDouble(),
@@ -73,7 +83,7 @@ class AudioPitchService {
 
       return true;
     } catch (e) {
-      if (kDebugMode) print('Error iniciando captura: $e');
+      debugPrint('Error iniciando captura: $e');
 
       _isListening = false;
 
@@ -82,6 +92,18 @@ class AudioPitchService {
   }
 
   Future<void> _onAudioData(dynamic rawBuffer) async {
+    // Si todavía no toca analizar, no hacemos NINGÚN trabajo: ni convertir
+    // el buffer nativo, ni acumularlo, ni recortarlo. Antes seguíamos
+    // haciendo toda esa conversión y el sublist() en cada callback (20-40
+    // veces/seg) aunque el resultado se fuera a descartar por el throttle
+    // de análisis, lo que seguía generando basura constante. Ahora, fuera
+    // de la ventana de análisis, el callback termina de inmediato.
+    final now = DateTime.now();
+    final bool dueForAnalysis =
+        now.difference(_lastAnalysis) >= _analysisInterval;
+
+    if (!dueForAnalysis) return;
+
     List<double> buffer = [];
 
     if (rawBuffer is Float32List) {
@@ -92,36 +114,45 @@ class AudioPitchService {
 
     _sampleBuffer.addAll(buffer);
 
-    while (_sampleBuffer.length >= bufferSize) {
-      final chunk = _sampleBuffer.sublist(0, bufferSize);
+    if (_sampleBuffer.length < bufferSize) {
+      // Aún no se acumulan suficientes muestras para un análisis; seguimos
+      // acumulando en próximos callbacks sin hacer trabajo adicional.
+      return;
+    }
 
-      _sampleBuffer.removeRange(0, bufferSize);
+    // Tomamos solo el bloque más reciente de bufferSize muestras y
+    // descartamos el resto del buffer (no necesitamos conservar el audio
+    // viejo entre análisis).
+    final chunk = _sampleBuffer.sublist(_sampleBuffer.length - bufferSize);
 
-      // Umbral ajustado: 0.003 evita ruido de fondo sin perder volumen de la guitarra
+    _sampleBuffer.clear();
 
-      if (!_hasEnoughVolume(chunk, threshold: 0.003)) {
-        _pitchHistory.clear(); // Limpia el historial si entra en silencio
+    _lastAnalysis = now;
 
-        continue;
-      }
+    // Umbral ajustado: 0.003 evita ruido de fondo sin perder volumen de la guitarra
 
-      try {
-        final result = await _pitchDetector.getPitchFromFloatBuffer(chunk);
+    if (!_hasEnoughVolume(chunk, threshold: 0.003)) {
+      _pitchHistory.clear(); // Limpia el historial si entra en silencio
 
-        if (result.pitched && result.pitch > 0) {
-          final double pitch = result.pitch;
+      return;
+    }
 
-          // Filtrar frecuencias fuera del rango útil de guitarra (E2 ~82Hz a E4 ~330Hz + armónicos hasta ~800Hz)
+    try {
+      final result = await _pitchDetector.getPitchFromFloatBuffer(chunk);
 
-          if (pitch >= 60.0 && pitch <= 800.0) {
-            final smoothedPitch = _smoothPitch(pitch);
+      if (result.pitched && result.pitch > 0) {
+        final double pitch = result.pitch;
 
-            _pitchStreamController.add(smoothedPitch);
-          }
+        // Filtrar frecuencias fuera del rango útil de guitarra (E2 ~82Hz a E4 ~330Hz + armónicos hasta ~800Hz)
+
+        if (pitch >= 60.0 && pitch <= 800.0) {
+          final smoothedPitch = _smoothPitch(pitch);
+
+          _pitchStreamController.add(smoothedPitch);
         }
-      } catch (e) {
-        if (kDebugMode) print('Error calculando pitch: $e');
       }
+    } catch (e) {
+      debugPrint('Error calculando pitch: $e');
     }
   }
 
@@ -152,7 +183,7 @@ class AudioPitchService {
   }
 
   void _onError(Object error) {
-    if (kDebugMode) print('Error en captura de audio: $error');
+    debugPrint('Error en captura de audio: $error');
   }
 
   Future<void> stopListening() async {

@@ -8,6 +8,8 @@ import '../../domain/models/note_model.dart';
 
 import '../../domain/pitch_converter.dart';
 
+import 'tuner_settings_provider.dart';
+
 final audioPitchServiceProvider = Provider<AudioPitchService>((ref) {
   final service = AudioPitchService();
 
@@ -59,10 +61,19 @@ class TunerState {
 
 class TunerNotifier extends StateNotifier<TunerState> {
   final AudioPitchService _audioPitchService;
+  final Ref _ref;
 
   StreamSubscription<double>? _pitchSubscription;
 
-  TunerNotifier(this._audioPitchService)
+  // Evita reconstruir toda la pantalla en cada detección de pitch (que puede
+  // llegar 20-40 veces por segundo). Limitamos las actualizaciones de UI a
+  // ~12 por segundo, suficiente para que se vea fluido pero sin saturar el
+  // hilo principal con recolecciones de basura constantes (lo que causaba
+  // el congelamiento progresivo).
+  DateTime _lastUiUpdate = DateTime.fromMillisecondsSinceEpoch(0);
+  static const Duration _uiUpdateInterval = Duration(milliseconds: 80);
+
+  TunerNotifier(this._audioPitchService, this._ref)
     : super(TunerState(isListening: false));
 
   /// Inicia o detiene la escucha del micrófono
@@ -90,6 +101,10 @@ class TunerNotifier extends StateNotifier<TunerState> {
       state = state.copyWith(isListening: true);
 
       _pitchSubscription = _audioPitchService.pitchStream.listen((frequency) {
+        final now = DateTime.now();
+        if (now.difference(_lastUiUpdate) < _uiUpdateInterval) return;
+        _lastUiUpdate = now;
+
         final note = PitchConverter.getNoteFromFrequency(frequency);
 
         if (note != null) {
@@ -127,33 +142,23 @@ class TunerNotifier extends StateNotifier<TunerState> {
     );
   }
 
-  /// Identifica la cuerda (1 a 6) para la afinación estándar de guitarra EADGBE
-
+  /// Identifica la cuerda (1 a N) según la afinación actualmente aplicada
+  /// (ver [tunerSettingsProvider]). Compara por nombre de nota + octava,
+  /// igual que antes, pero ahora contra la lista de cuerdas de la
+  /// afinación activa en vez de una tabla EADGBE fija — así Drop D,
+  /// afinaciones abiertas, etc. detectan la cuerda correcta.
   int _mapNoteToStringNumber(String noteName, int octave) {
-    final fullNote = '$noteName$octave';
+    final tuning = _ref.read(tunerSettingsProvider).appliedTuning;
 
-    switch (fullNote) {
-      case 'E2':
-        return 6; // 6ª Cuerda (E Grave)
-
-      case 'A2':
-        return 5; // 5ª Cuerda (A)
-
-      case 'D3':
-        return 4; // 4ª Cuerda (D)
-
-      case 'G3':
-        return 3; // 3ª Cuerda (G)
-
-      case 'B3':
-        return 2; // 2ª Cuerda (B)
-
-      case 'E4':
-        return 1; // 1ª Cuerda (E Agudo)
-
-      default:
-        return state.activeStringNumber; // Conserva la anterior si no encaja exactamente
+    for (final tunedString in tuning.strings) {
+      if (tunedString.noteName == noteName && tunedString.octave == octave) {
+        return tunedString.number;
+      }
     }
+
+    // No coincide exactamente con ninguna cuerda de la afinación activa:
+    // conservamos la cuerda seleccionada anteriormente.
+    return state.activeStringNumber;
   }
 
   @override
@@ -167,5 +172,5 @@ class TunerNotifier extends StateNotifier<TunerState> {
 final tunerProvider = StateNotifierProvider<TunerNotifier, TunerState>((ref) {
   final audioService = ref.watch(audioPitchServiceProvider);
 
-  return TunerNotifier(audioService);
+  return TunerNotifier(audioService, ref);
 });

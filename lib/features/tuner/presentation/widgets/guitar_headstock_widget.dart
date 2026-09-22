@@ -4,11 +4,23 @@ class GuitarHeadstockWidget extends StatelessWidget {
   final int activeStringNumber; // 1 (E agudo) a 6 (E grave)
   final Function(int) onSelectString;
 
+  /// Etiquetas de las 6 cuerdas indexadas por (número de cuerda - 1), ej.
+  /// stringLabels[0] = nombre de la 1ra cuerda. Si no se provee, usa la
+  /// afinación estándar E A D G B E.
+  final List<String>? stringLabels;
+
   const GuitarHeadstockWidget({
     super.key,
     required this.activeStringNumber,
     required this.onSelectString,
+    this.stringLabels,
   });
+
+  String _labelFor(int stringNumber, String fallback) {
+    final labels = stringLabels;
+    if (labels == null || labels.length < 6) return fallback;
+    return labels[stringNumber - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,19 +43,19 @@ class GuitarHeadstockWidget extends StatelessWidget {
 
             // --- INDICADORES DE NOTA (IZQUIERDA) ---
             // D (4ª Cuerda) -> Alineado a clavija superior (y = 108)
-            _buildNoteButton(label: 'D', stringNum: 4, left: 12, top: 86),
+            _buildNoteButton(label: _labelFor(4, 'D'), stringNum: 4, left: 12, top: 86),
             // A (5ª Cuerda) -> Alineado a clavija media (y = 174)
-            _buildNoteButton(label: 'A', stringNum: 5, left: 12, top: 152),
+            _buildNoteButton(label: _labelFor(5, 'A'), stringNum: 5, left: 12, top: 152),
             // E (6ª Cuerda) -> Alineado a clavija inferior (y = 240)
-            _buildNoteButton(label: 'E', stringNum: 6, left: 12, top: 218),
+            _buildNoteButton(label: _labelFor(6, 'E'), stringNum: 6, left: 12, top: 218),
 
             // --- INDICADORES DE NOTA (DERECHA) ---
             // G (3ª Cuerda) -> Alineado a clavija superior (y = 108)
-            _buildNoteButton(label: 'G', stringNum: 3, right: 12, top: 86),
+            _buildNoteButton(label: _labelFor(3, 'G'), stringNum: 3, right: 12, top: 86),
             // B (2ª Cuerda) -> Alineado a clavija media (y = 174)
-            _buildNoteButton(label: 'B', stringNum: 2, right: 12, top: 152),
+            _buildNoteButton(label: _labelFor(2, 'B'), stringNum: 2, right: 12, top: 152),
             // E (1ª Cuerda) -> Alineado a clavija inferior (y = 240)
-            _buildNoteButton(label: 'E', stringNum: 1, right: 12, top: 218),
+            _buildNoteButton(label: _labelFor(1, 'E'), stringNum: 1, right: 12, top: 218),
           ],
         ),
       ),
