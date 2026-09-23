@@ -7,7 +7,7 @@ import '../providers/tuner_provider.dart';
 import '../widgets/guitar_headstock_widget.dart';
 import '../widgets/tuning_pick_gauge.dart';
 import '../providers/tuner_settings_provider.dart';
-import '../screens/tuner_settings_screen.dart';
+import 'tuner_settings_screen.dart';
 
 class TunerScreen extends ConsumerStatefulWidget {
   const TunerScreen({super.key});
@@ -402,6 +402,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                     GuitarHeadstockWidget(
                       activeStringNumber: tunerState.activeStringNumber,
                       stringLabels: stringLabels,
+                      layout: ref.watch(tunerSettingsProvider).headstockLayout,
                       onSelectString: (stringNum) {
                         ref
                             .read(tunerProvider.notifier)

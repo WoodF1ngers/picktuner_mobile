@@ -129,6 +129,7 @@ flutter:
   assets:
     - assets/sounds/tick_accent.wav
     - assets/sounds/tick_normal.wav
+    - assets/images/headstock_3_3.png
 
 
 
