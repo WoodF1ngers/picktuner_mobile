@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/metronome_provider.dart';
+import '../providers/theme_provider.dart';
 
 class MetronomeScreen extends ConsumerWidget {
   const MetronomeScreen({super.key});
@@ -13,14 +14,18 @@ class MetronomeScreen extends ConsumerWidget {
     final state = ref.watch(metronomeProvider);
     final notifier = ref.read(metronomeProvider.notifier);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
+    final textPrimary = isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F);
+    final textSecondary = isDark ? AppColors.darkTextSecondary : const Color(0xFF464554);
+    final primaryColor = isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFD),
+      backgroundColor: isDark ? AppColors.darkNeutralBackground : const Color(0xFFF4FAFD),
       body: SafeArea(
         // Reemplazamos SingleChildScrollView + Column por ListView
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          // El padding inferior de 100px asegura que cualquier widget
-          // que esté al final de la lista suba limpiamente sobre el BottomNavBar.
           padding: const EdgeInsets.only(
             left: 16.0,
             right: 16.0,
@@ -37,18 +42,18 @@ class MetronomeScreen extends ConsumerWidget {
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF006B55),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'ACOUSTIC ENGINE V2.4',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF464554),
+                        color: textSecondary,
                         letterSpacing: 0.8,
                       ),
                     ),
@@ -60,29 +65,29 @@ class MetronomeScreen extends ConsumerWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8EFF1),
+                    color: isDark ? AppColors.darkSurfaceVariant : const Color(0xFFE8EFF1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(
                         Icons.graphic_eq,
                         size: 16,
-                        color: Color(0xFF4E3BC8),
+                        color: primaryColor,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'Clásico / Beep',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF161D1F),
+                          color: textPrimary,
                         ),
                       ),
                       Icon(
                         Icons.keyboard_arrow_down,
                         size: 16,
-                        color: Color(0xFF464554),
+                        color: textSecondary,
                       ),
                     ],
                   ),
@@ -95,13 +100,13 @@ class MetronomeScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(28),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(108, 92, 231, 0.08),
+                    color: primaryColor.withValues(alpha: isDark ? 0.2 : 0.08),
                     blurRadius: 24,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -115,26 +120,26 @@ class MetronomeScreen extends ConsumerWidget {
                       children: [
                         CustomPaint(
                           size: const Size(230, 230),
-                          painter: MetronomeArcPainter(bpm: state.bpm),
+                          painter: MetronomeArcPainter(bpm: state.bpm, isDark: isDark),
                         ),
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               '${state.bpm}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 56,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF161D1F),
+                                color: textPrimary,
                                 letterSpacing: -2,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'BPM',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF464554),
+                                color: textSecondary,
                                 letterSpacing: 1.5,
                               ),
                             ),
@@ -145,15 +150,15 @@ class MetronomeScreen extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE4DFFF),
+                                color: primaryColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
                                 state.tempoMarking,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4029BA),
+                                  color: primaryColor,
                                 ),
                               ),
                             ),
@@ -480,16 +485,22 @@ class MetronomeScreen extends ConsumerWidget {
 
 class MetronomeArcPainter extends CustomPainter {
   final int bpm;
-  MetronomeArcPainter({required this.bpm});
+  final bool isDark;
+
+  MetronomeArcPainter({required this.bpm, this.isDark = false});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 12;
 
+    final primaryColor = isDark ? AppColors.darkPrimary : const Color(0xFF6757E2);
+    final secondaryColor = isDark ? AppColors.darkSecondary : const Color(0xFF4029BA);
+    final trackColor = isDark ? AppColors.darkSurfaceVariant : const Color(0xFFE8EFF1);
+
     // Background track
     final bgPaint = Paint()
-      ..color = const Color(0xFFE8EFF1)
+      ..color = trackColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.round;
@@ -501,8 +512,8 @@ class MetronomeArcPainter extends CustomPainter {
     final sweepAngle = 2 * math.pi * progressFraction;
 
     final arcPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF6757E2), Color(0xFF4029BA)],
+      ..shader = LinearGradient(
+        colors: [primaryColor, secondaryColor],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 9
@@ -523,8 +534,8 @@ class MetronomeArcPainter extends CustomPainter {
       center.dy + radius * math.sin(knobAngle),
     );
 
-    final knobOuter = Paint()..color = const Color(0xFF4029BA);
-    final knobInner = Paint()..color = Colors.white;
+    final knobOuter = Paint()..color = secondaryColor;
+    final knobInner = Paint()..color = isDark ? AppColors.darkTextPrimary : Colors.white;
 
     canvas.drawCircle(knobOffset, 7, knobOuter);
     canvas.drawCircle(knobOffset, 4, knobInner);
@@ -532,6 +543,6 @@ class MetronomeArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant MetronomeArcPainter oldDelegate) {
-    return oldDelegate.bpm != bpm;
+    return oldDelegate.bpm != bpm || oldDelegate.isDark != isDark;
   }
 }

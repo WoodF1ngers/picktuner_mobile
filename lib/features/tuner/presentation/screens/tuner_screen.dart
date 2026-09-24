@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,9 @@ import '../providers/tuner_provider.dart';
 import '../widgets/photo_headstock_widget.dart';
 import '../widgets/tuning_pick_gauge.dart';
 import '../providers/tuner_settings_provider.dart';
+import '../providers/theme_provider.dart';
 import 'tuner_settings_screen.dart';
+import 'app_preferences_screen.dart';
 
 class TunerScreen extends ConsumerStatefulWidget {
   const TunerScreen({super.key});
@@ -17,39 +20,56 @@ class TunerScreen extends ConsumerStatefulWidget {
 }
 
 class _TunerScreenState extends ConsumerState<TunerScreen> {
-  late final ScrollController _scrollController;
-  bool _hasTriggeredReset = false; // Evita disparar el reset múltiples veces en un mismo gesto
+  double _dragAmount = 0.0;
+  bool _hasTriggeredReset = false;
+  bool _isResetting = false;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(tunerProvider.notifier).startListening();
     });
   }
 
-  void _onScroll() {
-    // Detecta overscroll hacia arriba (el usuario arrastra más allá del límite superior)
-    if (_scrollController.hasClients &&
-        _scrollController.offset < -60.0 &&
-        !_hasTriggeredReset) {
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
+    final delta = details.primaryDelta ?? 0;
+
+    if (delta > 0) {
+      setState(() {
+        _dragAmount = (_dragAmount + delta).clamp(0.0, 90.0);
+      });
+    } else if (delta < 0 && _dragAmount > 0) {
+      setState(() {
+        _dragAmount = (_dragAmount + delta).clamp(0.0, 90.0);
+      });
+    }
+
+    if (_dragAmount >= 70.0 && !_hasTriggeredReset) {
       _hasTriggeredReset = true;
+      _isResetting = true;
       HapticFeedback.mediumImpact();
       ref.read(tunerProvider.notifier).resetAllBadges();
-    }
-    // Reset el flag cuando el scroll vuelve a posición normal
-    if (_scrollController.offset >= -20.0) {
-      _hasTriggeredReset = false;
+
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          setState(() {
+            _dragAmount = 0.0;
+            _hasTriggeredReset = false;
+            _isResetting = false;
+          });
+        }
+      });
     }
   }
 
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
+  void _onVerticalDragEnd(DragEndDetails details) {
+    if (!_isResetting) {
+      setState(() {
+        _dragAmount = 0.0;
+        _hasTriggeredReset = false;
+      });
+    }
   }
 
   String _getNoteInSpanish(String? noteName) {
@@ -86,6 +106,8 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final tunerState = ref.watch(tunerProvider);
     final currentNoteModel = tunerState.currentNote;
     final appliedTuning = ref.watch(tunerSettingsProvider).appliedTuning;
@@ -109,41 +131,44 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
     final double cents = currentNoteModel?.centsOffset ?? 0.0;
     final bool isTuned = currentNoteModel?.status == TuningStatus.inTune;
 
+    final double pullProgress = (_dragAmount / 70.0).clamp(0.0, 1.0);
+    final double screenShiftY = math.pow(pullProgress, 0.8) * 22.0;
+
+    // Paleta de colores según tema
+    final bgGradient = isDark
+        ? const [Color(0xFF1B1E1D), Color(0xFF141716), Color(0xFF0F1211)]
+        : const [Color(0xFFFFFFFF), Color(0xFFF4F7FC), Color(0xFFE8EEF7)];
+    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
+    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final accentColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final chipBgColor = isDark ? AppColors.darkSurface : const Color(0xFFF1F5F9);
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFFFFF), Color(0xFFF4F7FC), Color(0xFFE8EEF7)],
-            stops: [0.0, 0.6, 1.0],
+            colors: bgGradient,
+            stops: const [0.0, 0.6, 1.0],
           ),
         ),
         child: SafeArea(
-          child: NotificationListener<OverscrollNotification>(
-            onNotification: (notification) {
-              // OverscrollNotification complementa el ScrollController
-              // para físicas que no actualicen el offset (e.g. BouncingScrollPhysics)
-              if (notification.overscroll < -1 && !_hasTriggeredReset) {
-                _hasTriggeredReset = true;
-                HapticFeedback.mediumImpact();
-                ref.read(tunerProvider.notifier).resetAllBadges();
-              }
-              return false;
-            },
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              slivers: [
-                SliverToBoxAdapter(
+          child: Stack(
+            children: [
+              // --- ESTRUCTURA PRINCIPAL ---
+              GestureDetector(
+                onVerticalDragUpdate: _onVerticalDragUpdate,
+                onVerticalDragEnd: _onVerticalDragEnd,
+                behavior: HitTestBehavior.translucent,
+                child: AnimatedContainer(
+                  duration: _dragAmount == 0
+                      ? const Duration(milliseconds: 300)
+                      : Duration.zero,
+                  curve: Curves.easeOutBack,
+                  transform: Matrix4.translationValues(0, screenShiftY, 0),
                   child: Column(
                     children: [
-                      // --- INDICADOR DE PULL-TO-RESET ---
-                      _PullToResetIndicator(
-                        scrollController: _scrollController,
-                      ),
                       // --- ENCABEZADO ---
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -161,7 +186,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(4),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF6C5CE7),
+                                        color: accentColor,
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: const Text(
@@ -175,17 +200,17 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     ),
                                     const SizedBox(width: 6),
                                     RichText(
-                                      text: const TextSpan(
+                                      text: TextSpan(
                                         text: 'Pick',
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w900,
-                                          color: Color(0xFF0F172A),
+                                          color: textPrimary,
                                         ),
                                         children: [
                                           TextSpan(
                                             text: 'Tuner',
-                                            style: TextStyle(color: Color(0xFF6C5CE7)),
+                                            style: TextStyle(color: accentColor),
                                           ),
                                         ],
                                       ),
@@ -197,24 +222,25 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                   onTap: () {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const TunerSettingsScreen(),
+                                        builder: (_) =>
+                                            const TunerSettingsScreen(),
                                       ),
                                     );
                                   },
                                   child: Row(
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Guitarra 6 cuerdas',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Color(0xFF64748B),
+                                          color: textSecondary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      const Icon(
+                                      Icon(
                                         Icons.chevron_right,
                                         size: 16,
-                                        color: Color(0xFF94A3B8),
+                                        color: textSecondary,
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
@@ -222,14 +248,14 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF4F2FF),
+                                          color: accentColor.withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Text(
                                           appliedTuningShortLabel,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 11,
-                                            color: Color(0xFF5A48D9),
+                                            color: accentColor,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -240,67 +266,88 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                               ],
                             ),
 
-                            // Contenedor estilizado del MODO AUTOMÁTICO
-                            Container(
-                              padding: const EdgeInsets.only(
-                                left: 14,
-                                right: 4,
-                                top: 4,
-                                bottom: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFF1F5F9,
-                                ).withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  RichText(
-                                    textAlign: TextAlign.end,
-                                    text: const TextSpan(
-                                      text: 'MODO\n',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF94A3B8),
-                                        height: 1.1,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: 'AUTOM.',
+                            Row(
+                              children: [
+                                // Contenedor estilizado del MODO AUTOMÁTICO
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    left: 14,
+                                    right: 4,
+                                    top: 4,
+                                    bottom: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: chipBgColor.withValues(alpha: 0.8),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      RichText(
+                                        textAlign: TextAlign.end,
+                                        text: TextSpan(
+                                          text: 'MODO\n',
                                           style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w900,
-                                            color: Color(0xFF6C5CE7),
+                                            fontSize: 8,
+                                            fontWeight: FontWeight.w800,
+                                            color: textSecondary,
                                             height: 1.1,
+                                            letterSpacing: 0.5,
                                           ),
+                                          children: [
+                                            TextSpan(
+                                              text: 'AUTOM.',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                                color: accentColor,
+                                                height: 1.1,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Transform.scale(
+                                        scale: 0.8,
+                                        child: Switch.adaptive(
+                                          value: tunerState.isAutoMode,
+                                          activeThumbColor: Colors.white,
+                                          activeTrackColor: accentColor,
+                                          inactiveThumbColor: Colors.white,
+                                          inactiveTrackColor: isDark
+                                              ? const Color(0xFF4A5568)
+                                              : const Color(0xFFCBD5E1),
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          onChanged: (val) {
+                                            ref
+                                                .read(tunerProvider.notifier)
+                                                .toggleAutoMode(val);
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 6),
-                                  Transform.scale(
-                                    scale: 0.8,
-                                    child: Switch.adaptive(
-                                      value: tunerState.isAutoMode,
-                                      activeThumbColor: Colors.white,
-                                      activeTrackColor: const Color(0xFF6C5CE7),
-                                      inactiveThumbColor: Colors.white,
-                                      inactiveTrackColor: const Color(0xFFCBD5E1),
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      onChanged: (val) {
-                                        ref
-                                            .read(tunerProvider.notifier)
-                                            .toggleAutoMode(val);
-                                      },
-                                    ),
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.tune_rounded,
+                                    color: accentColor,
+                                    size: 22,
                                   ),
-                                ],
-                              ),
+                                  tooltip: 'Preferencias',
+                                  onPressed: () {
+                                    HapticFeedback.selectionClick();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => const AppPreferencesScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -308,7 +355,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
                       // --- ZONA DEL AFINADOR CON TRAMA DE PUNTOS ---
                       CustomPaint(
-                        painter: TunerGridBackgroundPainter(),
+                        painter: TunerGridBackgroundPainter(isDark: isDark),
                         child: Column(
                           children: [
                             const SizedBox(height: 10),
@@ -321,10 +368,10 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                   children: [
                                     Text(
                                       displayNote,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 72,
                                         fontWeight: FontWeight.w900,
-                                        color: Color(0xFF0F172A),
+                                        color: textPrimary,
                                         height: 1.0,
                                         letterSpacing: -1.5,
                                       ),
@@ -332,9 +379,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     const SizedBox(height: 6),
                                     Text(
                                       '$octaveNotation  •  ${currentFrequency.toStringAsFixed(2)} Hz',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 13,
-                                        color: Color(0xFF64748B),
+                                        color: textSecondary,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -349,15 +396,15 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                       vertical: 3,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
+                                      color: chipBgColor,
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       '${tunerState.activeStringNumber}ª cuerda',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF475569),
+                                        color: isDark ? AppColors.darkTextPrimary : const Color(0xFF475569),
                                       ),
                                     ),
                                   ),
@@ -369,16 +416,19 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
                             // ESTADO TENSAR / DESTENSAR Y BADGE DE AFINACIÓN
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 28),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 28,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
+                                  Text(
                                     '« TENSAR',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF94A3B8),
+                                      color: textSecondary,
                                       letterSpacing: 0.5,
                                     ),
                                   ),
@@ -389,13 +439,13 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isTuned
-                                          ? const Color(0xFFE6F9F0)
-                                          : const Color(0xFFFFF0F0),
+                                          ? (isDark ? const Color(0xFF0F382B) : const Color(0xFFE6F9F0))
+                                          : (isDark ? const Color(0xFF3E1C1F) : const Color(0xFFFFF0F0)),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: isTuned
-                                            ? const Color(0xFF00B894)
-                                            : const Color(0xFFFF7675),
+                                            ? (isDark ? AppColors.darkSecondary : const Color(0xFF00B894))
+                                            : AppColors.darkTertiary,
                                         width: 1.2,
                                       ),
                                     ),
@@ -405,18 +455,18 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w900,
                                         color: isTuned
-                                            ? const Color(0xFF00B894)
-                                            : const Color(0xFFFF7675),
+                                            ? (isDark ? AppColors.darkSecondary : const Color(0xFF00B894))
+                                            : AppColors.darkTertiary,
                                         letterSpacing: 0.5,
                                       ),
                                     ),
                                   ),
-                                  const Text(
+                                  Text(
                                     'DESTENSAR »',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF94A3B8),
+                                      color: textSecondary,
                                       letterSpacing: 0.5,
                                     ),
                                   ),
@@ -428,60 +478,110 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
                             // MEDIDOR DE PÚA
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: TuningPickGauge(cents: cents, isTuned: isTuned),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: TuningPickGauge(
+                                cents: cents,
+                                isTuned: isTuned,
+                              ),
                             ),
                           ],
                         ),
                       ),
+
+                      // --- PALA DE LA GUITARRA EN TUNERSCREEN ---
+                      Expanded(
+                        child: Stack(
+                          alignment: Alignment.bottomCenter,
+                          children: [
+                            PhotoHeadstockWidget(
+                              activeStringNumber: tunerState.activeStringNumber,
+                              stringLabels: stringLabels,
+                              tunedStrings: tunerState.tunedStrings,
+                              tuningProgress: tunerState.tuningProgress,
+                              onSelectString: (stringNum) {
+                                ref
+                                    .read(tunerProvider.notifier)
+                                    .selectString(stringNum);
+                              },
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: 80,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      bgGradient[0].withValues(alpha: 0.0),
+                                      bgGradient.last.withValues(alpha: isDark ? 0.95 : 0.8),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 55),
                     ],
                   ),
                 ),
-                // --- PALA DE LA GUITARRA EN TUNERSCREEN ---
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.55,
-                    child: Stack(
-                      alignment: Alignment.bottomCenter,
-                      children: [
-                        PhotoHeadstockWidget(
-                          activeStringNumber: tunerState.activeStringNumber,
-                          stringLabels: stringLabels,
-                          tunedStrings: tunerState.tunedStrings,
-                          tuningProgress: tunerState.tuningProgress,
-                          onSelectString: (stringNum) {
-                            ref
-                                .read(tunerProvider.notifier)
-                                .selectString(stringNum);
-                          },
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 80,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.0),
-                                  const Color(0xFFE8EEF7).withValues(alpha: 0.8),
-                                ],
+              ),
+
+              // --- INDICADOR FLOTANTE SPINNER ---
+              if (pullProgress > 0 || _isResetting)
+                Positioned(
+                  top: 8 + screenShiftY,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Transform.scale(
+                      scale: 0.6 + (pullProgress * 0.4),
+                      child: Opacity(
+                        opacity: pullProgress.clamp(0.2, 1.0),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurface : Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: accentColor.withValues(alpha: 0.3),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
+                            ],
                           ),
+                          child: _isResetting
+                              ? Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      accentColor,
+                                    ),
+                                  ),
+                                )
+                              : Transform.rotate(
+                                  angle: pullProgress * math.pi * 2,
+                                  child: Icon(
+                                    Icons.refresh_rounded,
+                                    color: accentColor,
+                                    size: 24,
+                                  ),
+                                ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 55),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
@@ -490,93 +590,18 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 }
 
 // -----------------------------------------------------------------------------
-// INDICADOR VISUAL DE PULL-TO-RESET
-// -----------------------------------------------------------------------------
-class _PullToResetIndicator extends StatefulWidget {
-  final ScrollController scrollController;
-  const _PullToResetIndicator({required this.scrollController});
-
-  @override
-  State<_PullToResetIndicator> createState() => _PullToResetIndicatorState();
-}
-
-class _PullToResetIndicatorState extends State<_PullToResetIndicator> {
-  double _pullProgress = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (!widget.scrollController.hasClients) return;
-    final offset = widget.scrollController.offset;
-    // offset negativo = pull hacia arriba. Mapea -0 a -80 => 0.0 a 1.0
-    final progress = ((-offset) / 80.0).clamp(0.0, 1.0);
-    if (progress != _pullProgress) {
-      setState(() => _pullProgress = progress);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.scrollController.removeListener(_onScroll);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_pullProgress <= 0.0) return const SizedBox.shrink();
-
-    final bool willTrigger = _pullProgress >= 0.75;
-
-    return Opacity(
-      opacity: _pullProgress,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedRotation(
-              turns: _pullProgress * 0.5,
-              duration: Duration.zero,
-              child: Icon(
-                willTrigger ? Icons.refresh_rounded : Icons.arrow_upward_rounded,
-                size: 14,
-                color: willTrigger
-                    ? const Color(0xFF6C5CE7)
-                    : const Color(0xFF94A3B8),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              willTrigger ? 'Suelta para resetear' : 'Sube para resetear badges',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: willTrigger
-                    ? const Color(0xFF6C5CE7)
-                    : const Color(0xFF94A3B8),
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------------------
 // PAINTER DEL FONDO DE PUNTOS
-// Definido en el nivel superior (top-level) fuera de las clases del widget
 // -----------------------------------------------------------------------------
 class TunerGridBackgroundPainter extends CustomPainter {
+  final bool isDark;
+
+  TunerGridBackgroundPainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
+    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
     final dotPaint = Paint()
-      ..color = const Color(0xFF6C5CE7).withValues(alpha: 0.12)
+      ..color = primaryColor.withValues(alpha: isDark ? 0.22 : 0.12)
       ..style = PaintingStyle.fill;
 
     const double stepX = 28.0;
@@ -590,5 +615,7 @@ class TunerGridBackgroundPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant TunerGridBackgroundPainter oldDelegate) {
+    return oldDelegate.isDark != isDark;
+  }
 }

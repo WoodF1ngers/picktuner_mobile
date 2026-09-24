@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/instrument_tuning.dart';
 import '../../domain/tuning_database.dart';
+import '../providers/theme_provider.dart';
 import '../providers/tuner_settings_provider.dart';
 
 class TunerSettingsScreen extends ConsumerStatefulWidget {
@@ -46,12 +47,14 @@ class _TunerSettingsScreenState extends ConsumerState<TunerSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFD),
+      backgroundColor: isDark ? AppColors.darkBackground : const Color(0xFFF4FAFD),
       body: SafeArea(
         child: Column(
           children: [
-            _Header(),
+            const _Header(),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -63,7 +66,7 @@ class _TunerSettingsScreenState extends ConsumerState<TunerSettingsScreen> {
                   const SizedBox(height: 12),
                   _ActivePreviewPill(layout: _headstockLayout),
                   const SizedBox(height: 20),
-                  _SectionLabel(
+                  const _SectionLabel(
                     label: 'Recientes',
                     trailingIcon: Icons.history,
                     trailingLabel: 'Historial',
@@ -124,21 +127,27 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              Icons.arrow_back_ios_new,
+              size: 20,
+              color: isDark ? AppColors.darkTextPrimary : Colors.black,
+            ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Configuración Acústica',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF161D1F),
+                color: isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F),
                 letterSpacing: -0.2,
               ),
             ),
@@ -147,7 +156,10 @@ class _Header extends StatelessWidget {
             width: 32,
             height: 32,
             margin: const EdgeInsets.only(right: 8),
-            decoration: const BoxDecoration(color: Color(0xFF4E3BC8), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkPrimary : const Color(0xFF4E3BC8),
+              shape: BoxShape.circle,
+            ),
             child: const Icon(Icons.person, color: Colors.white, size: 18),
           ),
         ],
@@ -164,10 +176,12 @@ class _HeadstockToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E9EC),
+        color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE2E9EC),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -209,29 +223,41 @@ class _ToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.transparent,
+          color: isActive
+              ? (isDark ? AppColors.darkSurface : Colors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isActive
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 4)]
+              ? [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06), blurRadius: 4)]
               : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isActive ? const Color(0xFF4E3BC8) : const Color(0xFF464554)),
+            Icon(
+              icon,
+              size: 18,
+              color: isActive
+                  ? (isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8))
+                  : (isDark ? AppColors.darkTextSecondary : const Color(0xFF464554)),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isActive ? const Color(0xFF161D1F) : const Color(0xFF464554),
+                color: isActive
+                    ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F))
+                    : (isDark ? AppColors.darkTextSecondary : const Color(0xFF464554)),
               ),
             ),
           ],
@@ -248,6 +274,7 @@ class _ActivePreviewPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final description = layout == HeadstockLayout.threeAndThree
         ? 'Distribución balanceada L-R (Gibson style)'
         : 'Alineación superior 6 en línea (Fender style)';
@@ -255,35 +282,62 @@ class _ActivePreviewPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04), blurRadius: 6)],
       ),
       child: Row(
         children: [
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: const Color(0xFFE4DFFF), borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.music_note, color: Color(0xFF4E3BC8), size: 20),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkPrimary.withValues(alpha: 0.25) : const Color(0xFFE4DFFF),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.music_note,
+              color: isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8),
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Paso Clave Activo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(
+                  'Paso Clave Activo',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(description, style: const TextStyle(fontSize: 12, color: Color(0xFF464554))),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
+                  ),
+                ),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(color: const Color(0xFF6DFAD2), borderRadius: BorderRadius.circular(20)),
-            child: const Text(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSecondary.withValues(alpha: 0.25) : const Color(0xFF6DFAD2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
               'A=440Hz',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF005140)),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkSecondary : const Color(0xFF005140),
+              ),
             ),
           ),
         ],
@@ -301,6 +355,8 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
@@ -308,14 +364,30 @@ class _SectionLabel extends StatelessWidget {
         children: [
           Text(
             label.toUpperCase(),
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF767586), letterSpacing: 0.6),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+              letterSpacing: 0.6,
+            ),
           ),
           if (trailingLabel != null)
             Row(
               children: [
-                if (trailingIcon != null) Icon(trailingIcon, size: 13, color: const Color(0xFF4E3BC8)),
+                if (trailingIcon != null)
+                  Icon(
+                    trailingIcon,
+                    size: 13,
+                    color: isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8),
+                  ),
                 const SizedBox(width: 3),
-                Text(trailingLabel!, style: const TextStyle(fontSize: 12, color: Color(0xFF4E3BC8))),
+                Text(
+                  trailingLabel!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8),
+                  ),
+                ),
               ],
             ),
         ],
@@ -333,33 +405,52 @@ class _RecentTuningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04), blurRadius: 6)],
         ),
         child: Row(
           children: [
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(color: Color(0xFF6DFAD2), shape: BoxShape.circle),
-              child: const Icon(Icons.graphic_eq, color: Color(0xFF006B55), size: 22),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSecondary.withValues(alpha: 0.25) : const Color(0xFF6DFAD2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.graphic_eq,
+                color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Guitarra 6 Cuerdas', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  Text(
+                    'Guitarra 6 Cuerdas',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                      color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     tuning.displayLabel,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF464554)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
+                    ),
                   ),
                 ],
               ),
@@ -368,8 +459,15 @@ class _RecentTuningCard extends StatelessWidget {
               Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(color: Color(0xFF006B55), shape: BoxShape.circle),
-                child: const Icon(Icons.check, color: Colors.white, size: 16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check,
+                  color: isDark ? AppColors.darkBackground : Colors.white,
+                  size: 16,
+                ),
               ),
           ],
         ),
@@ -395,11 +493,13 @@ class _InstrumentAccordion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04), blurRadius: 6)],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -414,13 +514,17 @@ class _InstrumentAccordion extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: group.isFunctional ? const Color(0xFFE4DFFF) : const Color(0xFFE2E9EC),
+                      color: group.isFunctional
+                          ? (isDark ? AppColors.darkPrimary.withValues(alpha: 0.25) : const Color(0xFFE4DFFF))
+                          : (isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE2E9EC)),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       group.isFunctional ? Icons.graphic_eq : Icons.speaker,
                       size: 18,
-                      color: group.isFunctional ? const Color(0xFF4E3BC8) : const Color(0xFF464554),
+                      color: group.isFunctional
+                          ? (isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8))
+                          : (isDark ? AppColors.darkTextSecondary : const Color(0xFF464554)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -428,15 +532,31 @@ class _InstrumentAccordion extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(group.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                        Text(group.subtitle, style: const TextStyle(fontSize: 11.5, color: Color(0xFF767586))),
+                        Text(
+                          group.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                          ),
+                        ),
+                        Text(
+                          group.subtitle,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   AnimatedRotation(
                     turns: isExpanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 180),
-                    child: const Icon(Icons.expand_more, color: Color(0xFF767586)),
+                    child: Icon(
+                      Icons.expand_more,
+                      color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                    ),
                   ),
                 ],
               ),
@@ -451,14 +571,18 @@ class _InstrumentAccordion extends StatelessWidget {
                   child: Container(
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    color: isSelected ? const Color(0xFFE4DFFF).withValues(alpha: 0.4) : Colors.transparent,
+                    color: isSelected
+                        ? (isDark ? AppColors.darkPrimary.withValues(alpha: 0.3) : const Color(0xFFE4DFFF).withValues(alpha: 0.4))
+                        : Colors.transparent,
                     child: Row(
                       children: [
                         Container(
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF006B55) : const Color(0xFFC7C4D7),
+                            color: isSelected
+                                ? (isDark ? AppColors.darkSecondary : const Color(0xFF006B55))
+                                : (isDark ? AppColors.darkTextSecondary.withValues(alpha: 0.4) : const Color(0xFFC7C4D7)),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -469,12 +593,16 @@ class _InstrumentAccordion extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                              color: const Color(0xFF161D1F),
+                              color: isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F),
                             ),
                           ),
                         ),
                         if (isSelected)
-                          const Icon(Icons.check, size: 18, color: Color(0xFF006B55)),
+                          Icon(
+                            Icons.check,
+                            size: 18,
+                            color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
+                          ),
                       ],
                     ),
                   ),
@@ -496,6 +624,8 @@ class _ApplyBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
       child: Column(
@@ -506,7 +636,7 @@ class _ApplyBar extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF4E3BC8),
+                color: isDark ? AppColors.darkPrimary : const Color(0xFF4E3BC8),
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
@@ -533,13 +663,20 @@ class _ApplyBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.verified, size: 14, color: Color(0xFF006B55)),
+              Icon(
+                Icons.verified,
+                size: 14,
+                color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
+              ),
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
                   'Seleccionada: ${pendingTuning.displayLabel}',
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF464554)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
+                  ),
                 ),
               ),
             ],
@@ -549,3 +686,4 @@ class _ApplyBar extends StatelessWidget {
     );
   }
 }
+

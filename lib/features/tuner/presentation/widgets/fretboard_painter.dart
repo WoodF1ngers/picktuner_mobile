@@ -9,8 +9,9 @@ import '../../domain/models/chord_models.dart';
 /// el mismo número de dedo, se dibuja una barra de cejilla detrás.
 class FretboardPainter extends CustomPainter {
   final ChordVariation variation;
+  final bool isDark;
 
-  FretboardPainter(this.variation);
+  FretboardPainter(this.variation, {this.isDark = false});
 
   // Coordenadas lógicas (espacio 240x200), igual que el SVG de referencia.
   static const double _nutY = 10;
@@ -40,7 +41,10 @@ class FretboardPainter extends CustomPainter {
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(backingRect, Radius.circular(_scaleX(4, size))),
-      Paint()..color = const Color(0xFFF4FAFD).withValues(alpha: 0.6),
+      Paint()
+        ..color = isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : const Color(0xFFF4FAFD).withValues(alpha: 0.6),
     );
 
     // Traste (nut) o etiqueta de traste inicial si es cejilla
@@ -51,13 +55,14 @@ class FretboardPainter extends CustomPainter {
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(nutRect, Radius.circular(_scaleX(2, size))),
-        Paint()..color = const Color(0xFF2B3234),
+        Paint()
+          ..color = isDark ? Colors.white70 : const Color(0xFF2B3234),
       );
     }
 
     // Líneas de trastes horizontales
     final fretPaint = Paint()
-      ..color = const Color(0xFFC8C4D7)
+      ..color = isDark ? Colors.white30 : const Color(0xFFC8C4D7)
       ..strokeWidth = _scaleY(2, size)
       ..strokeCap = StrokeCap.round;
     for (final y in _fretLineYs) {
@@ -74,7 +79,7 @@ class FretboardPainter extends CustomPainter {
         text: TextSpan(
           text: 'Fr ${variation.startFret + i}',
           style: TextStyle(
-            color: const Color(0xFF787586),
+            color: isDark ? Colors.white70 : const Color(0xFF787586),
             fontSize: _scaleX(11, size),
             fontWeight: FontWeight.w600,
           ),
@@ -92,7 +97,7 @@ class FretboardPainter extends CustomPainter {
     // Cuerdas verticales con grosor graduado
     for (int i = 0; i < _stringXs.length; i++) {
       final paint = Paint()
-        ..color = const Color(0xFF787586)
+        ..color = isDark ? Colors.white60 : const Color(0xFF787586)
         ..strokeWidth = _scaleX(_stringWidths[i], size);
       canvas.drawLine(
         _mapLogical(_stringXs[i], _stringTopY, size),

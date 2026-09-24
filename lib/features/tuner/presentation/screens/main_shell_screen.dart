@@ -13,7 +13,6 @@ class MainShellScreen extends StatefulWidget {
 }
 
 class _MainShellScreenState extends State<MainShellScreen> {
-  // 1. Inicia en 0 para que la primera pantalla sea el Afinador
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
@@ -25,7 +24,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAFD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           IndexedStack(index: _currentIndex, children: _screens),
