@@ -10,7 +10,7 @@ import 'photo_headstock_widget.dart';
 /// (1080 x 1920), por lo que los paths se dibujan directamente sobre ese
 /// mismo sistema de coordenadas.
 class PhotoHeadstockInlineWidget extends StatelessWidget {
-  final int activeStringNumber;
+  final int? activeStringNumber;
   final List<String>? stringLabels;
   final Set<int> tunedStrings;
   final double tuningProgress;
@@ -18,7 +18,7 @@ class PhotoHeadstockInlineWidget extends StatelessWidget {
 
   const PhotoHeadstockInlineWidget({
     super.key,
-    required this.activeStringNumber,
+    this.activeStringNumber,
     this.stringLabels,
     this.tunedStrings = const {},
     this.tuningProgress = 0.0,
@@ -161,19 +161,21 @@ class PhotoHeadstockInlineWidget extends StatelessWidget {
 }
 
 class _InlineSvgElementsPainter extends CustomPainter {
-  final int activeStringNumber;
+  final int? activeStringNumber;
   final Map<int, String> stringSvgPaths;
   final Map<int, String> pegSvgPaths;
 
   _InlineSvgElementsPainter({
-    required this.activeStringNumber,
+    this.activeStringNumber,
     required this.stringSvgPaths,
     required this.pegSvgPaths,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final String? stringData = stringSvgPaths[activeStringNumber];
+    final String? stringData = activeStringNumber == null
+        ? null
+        : stringSvgPaths[activeStringNumber];
     if (stringData == null) return;
 
     final Path stringPath = parseSvgPathData(stringData);
@@ -196,7 +198,9 @@ class _InlineSvgElementsPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(stringPath, corePaint);
 
-    final String? pegData = pegSvgPaths[activeStringNumber];
+    final String? pegData = activeStringNumber == null
+        ? null
+        : pegSvgPaths[activeStringNumber];
     if (pegData != null) {
       final Path pegPath = parseSvgPathData(pegData);
       final Paint pegHighlight = Paint()

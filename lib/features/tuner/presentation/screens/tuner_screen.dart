@@ -129,8 +129,8 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
     final String displayNote = _getNoteInSpanish(currentNoteModel?.name);
     final String octaveNotation = currentNoteModel != null
         ? '${currentNoteModel.name}${currentNoteModel.octave}'
-        : 'A₂';
-    final double currentFrequency = currentNoteModel?.currentFrequency ?? 110.0;
+        : '--';
+    final double? currentFrequency = currentNoteModel?.currentFrequency;
     final double cents = currentNoteModel?.centsOffset ?? 0.0;
     final bool isTuned = currentNoteModel?.status == TuningStatus.inTune;
 
@@ -394,7 +394,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '$octaveNotation  •  ${currentFrequency.toStringAsFixed(2)} Hz',
+                                      currentFrequency != null
+                                          ? '$octaveNotation  •  ${currentFrequency.toStringAsFixed(2)} Hz'
+                                          : '--',
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: textSecondary,
@@ -403,30 +405,31 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     ),
                                   ],
                                 ),
-                                Positioned(
-                                  right: -80,
-                                  top: 4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: chipBgColor,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      '${tunerState.activeStringNumber}ª cuerda',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: isDark
-                                            ? AppColors.darkTextPrimary
-                                            : const Color(0xFF475569),
+                                if (tunerState.activeStringNumber != null)
+                                  Positioned(
+                                    right: -80,
+                                    top: 4,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: chipBgColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${tunerState.activeStringNumber}ª cuerda',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark
+                                              ? AppColors.darkTextPrimary
+                                              : const Color(0xFF475569),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
 
@@ -510,6 +513,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                               child: TuningPickGauge(
                                 cents: cents,
                                 isTuned: isTuned,
+                                hasSignal: currentNoteModel != null,
                               ),
                             ),
                           ],

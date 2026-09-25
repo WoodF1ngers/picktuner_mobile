@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
 
 class PhotoHeadstockWidget extends StatelessWidget {
-  final int activeStringNumber; // 1 a 6
+  final int? activeStringNumber; // 1 a 6
   final List<String>? stringLabels;
   final Set<int> tunedStrings; // Cuerdas afiandas
   final double tuningProgress; // Llenado (0.0 a 1.0)
@@ -11,7 +11,7 @@ class PhotoHeadstockWidget extends StatelessWidget {
 
   const PhotoHeadstockWidget({
     super.key,
-    required this.activeStringNumber,
+    this.activeStringNumber,
     this.stringLabels,
     this.tunedStrings = const {},
     this.tuningProgress = 0.0,
@@ -384,20 +384,24 @@ class _BadgeFillPainter extends CustomPainter {
 }
 
 class _SvgElementsPainter extends CustomPainter {
-  final int activeStringNumber;
+  final int? activeStringNumber;
   final Map<int, String> stringSvgPaths;
   final Map<int, String> pegSvgPaths;
 
   _SvgElementsPainter({
-    required this.activeStringNumber,
+    this.activeStringNumber,
     required this.stringSvgPaths,
     required this.pegSvgPaths,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final String? activeStringData = stringSvgPaths[activeStringNumber];
-    final String? activePegData = pegSvgPaths[activeStringNumber];
+    final String? activeStringData = activeStringNumber == null
+        ? null
+        : stringSvgPaths[activeStringNumber];
+    final String? activePegData = activeStringNumber == null
+        ? null
+        : pegSvgPaths[activeStringNumber];
 
     if (activeStringData == null) return;
 

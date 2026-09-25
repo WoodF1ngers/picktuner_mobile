@@ -17,7 +17,7 @@ class TunerState {
   final bool isListening;
   final NoteModel? currentNote;
   final bool isAutoMode;
-  final int activeStringNumber; // 1 a 6
+  final int? activeStringNumber; // 1 a 6; null = estado idle
   final Set<int> tunedStrings; // Cuerdas afinadas con éxito
   final double tuningProgress; // Progreso de llenado de 0.0 a 1.0
 
@@ -25,7 +25,7 @@ class TunerState {
     required this.isListening,
     this.currentNote,
     this.isAutoMode = true,
-    this.activeStringNumber = 5,
+    this.activeStringNumber,
     Set<int>? tunedStrings,
     this.tuningProgress = 0.0,
   }) : tunedStrings = tunedStrings ?? {};
@@ -101,13 +101,15 @@ class TunerNotifier extends StateNotifier<TunerState> {
         final note = PitchConverter.getNoteFromFrequency(frequency);
 
         if (note != null) {
-          int stringNum = state.activeStringNumber;
+          int? stringNum = state.activeStringNumber;
 
           if (state.isAutoMode) {
             stringNum = _mapNoteToStringNumber(note.name, note.octave);
           }
 
-          _evaluateInTuneStatus(stringNum, note.centsOffset);
+          if (stringNum != null) {
+            _evaluateInTuneStatus(stringNum, note.centsOffset);
+          }
 
           state = state.copyWith(
             currentNote: note,
@@ -236,7 +238,7 @@ class TunerNotifier extends StateNotifier<TunerState> {
     state = state.copyWith(tunedStrings: {}, tuningProgress: 0.0);
   }
 
-  int _mapNoteToStringNumber(String noteName, int octave) {
+  int? _mapNoteToStringNumber(String noteName, int octave) {
     final tuning = _ref.read(tunerSettingsProvider).appliedTuning;
 
     for (final tunedString in tuning.strings) {

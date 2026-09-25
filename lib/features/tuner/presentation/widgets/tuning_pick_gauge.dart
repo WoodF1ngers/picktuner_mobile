@@ -3,15 +3,22 @@ import 'package:flutter/material.dart';
 class TuningPickGauge extends StatelessWidget {
   final double cents; // Desviación en cents (-50.0 a +50.0)
   final bool isTuned;
+  final bool hasSignal;
 
-  const TuningPickGauge({super.key, required this.cents, this.isTuned = false});
+  const TuningPickGauge({
+    super.key,
+    required this.cents,
+    this.isTuned = false,
+    this.hasSignal = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    const double inTuneCents = 4.0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // --- ÁREA DE LA PÚA MÓVIL ---
         SizedBox(
           height: 48,
           width: double.infinity,
@@ -19,16 +26,17 @@ class TuningPickGauge extends StatelessWidget {
             builder: (context, constraints) {
               final double width = constraints.maxWidth;
               final double center = width / 2;
-
-              // Convertimos el rango de cents (-50 a +50) a rango horizontal en pixeles
               final double maxOffset = (width / 2) - 24;
               final double normalizedCents = (cents.clamp(-50.0, 50.0)) / 50.0;
               final double xPos = center + (normalizedCents * maxOffset);
+              final bool showDirection =
+                  hasSignal && !isTuned && cents.abs() > inTuneCents;
+              final bool showInTune = hasSignal && isTuned;
+              final bool needsTension = cents < -inTuneCents;
 
               return Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Marcador de centro vertical
                   Positioned(
                     left: center - 1,
                     top: 0,
@@ -41,21 +49,64 @@ class TuningPickGauge extends StatelessWidget {
                     ),
                   ),
 
-                  // Púa animada según el valor de 'cents'
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 70),
-                    curve: Curves.easeOutCubic,
-                    left: xPos - 18, // Centrar púa de ancho 36px
-                    top: 2,
-                    child: CustomPaint(
-                      size: const Size(36, 42),
-                      painter: GuitarPickPainter(
-                        color: isTuned
-                            ? const Color(0xFF00B894)
-                            : const Color(0xFF6C5CE7),
+                  if (showDirection)
+                    Positioned(
+                      left: needsTension
+                          ? (xPos - 18 - 58).clamp(0.0, width - 66)
+                          : (xPos + 18).clamp(0.0, width - 66),
+                      top: 15,
+                      child: Text(
+                        needsTension ? 'TENSAR' : 'DESTENSAR',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ),
-                  ),
+
+                  if (showInTune)
+                    Positioned(
+                      left: (xPos - 38).clamp(0.0, width - 76),
+                      top: 15,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F9F0),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF00B894),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: const Text(
+                          'AFINADO',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                            color: Color(0xFF00B894),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  if (hasSignal)
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 70),
+                      curve: Curves.easeOutCubic,
+                      left: xPos - 18,
+                      top: 2,
+                      child: CustomPaint(
+                        size: const Size(36, 42),
+                        painter: GuitarPickPainter(
+                          color: isTuned
+                              ? const Color(0xFF00B894)
+                              : const Color(0xFF6C5CE7),
+                        ),
+                      ),
+                    ),
                 ],
               );
             },
@@ -64,7 +115,6 @@ class TuningPickGauge extends StatelessWidget {
 
         const SizedBox(height: 6),
 
-        // --- REGLA HORIZONTAL DE GRADUACIÓN ---
         SizedBox(
           height: 16,
           width: double.infinity,
