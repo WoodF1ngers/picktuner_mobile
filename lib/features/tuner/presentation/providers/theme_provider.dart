@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum AppThemeOption {
-  system,
-  dark,
-  light,
-}
+enum AppThemeOption { system, dark, light }
 
 class AppPreferencesState {
   final AppThemeOption themeOption;
@@ -15,7 +11,8 @@ class AppPreferencesState {
   final bool playSoundOnTune;
   final String notationSystem; // 'Solfeo (Do, Re, Mi)' | 'Científica (C, D, E)'
   final String sensitivity; // 'Baja', 'Media', 'Alta'
-  final String tolerance; // 'Relajado (±8c)', 'Estándar (±4c)', 'Estricto (±2c)'
+  final String
+  tolerance; // 'Relajado (±8c)', 'Estándar (±4c)', 'Estricto (±2c)'
   final bool showFrequencyHz;
 
   const AppPreferencesState({
@@ -108,8 +105,8 @@ class AppPreferencesNotifier extends StateNotifier<AppPreferencesState> {
 
 final preferencesProvider =
     StateNotifierProvider<AppPreferencesNotifier, AppPreferencesState>((ref) {
-  return AppPreferencesNotifier();
-});
+      return AppPreferencesNotifier();
+    });
 
 /// Definición de paletas de color según "Precision Audio Dark"
 class AppColors {

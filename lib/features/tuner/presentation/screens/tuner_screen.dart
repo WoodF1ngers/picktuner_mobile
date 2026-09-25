@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../../domain/models/tuning_status.dart';
 import '../providers/tuner_provider.dart';
 import '../widgets/photo_headstock_widget.dart';
 import '../widgets/tuning_pick_gauge.dart';
+import '../widgets/photo_headstock_inline_widget.dart';
 import '../providers/tuner_settings_provider.dart';
 import '../providers/theme_provider.dart';
 import 'tuner_settings_screen.dart';
@@ -110,7 +112,8 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
 
     final tunerState = ref.watch(tunerProvider);
     final currentNoteModel = tunerState.currentNote;
-    final appliedTuning = ref.watch(tunerSettingsProvider).appliedTuning;
+    final tunerSettings = ref.watch(tunerSettingsProvider);
+    final appliedTuning = tunerSettings.appliedTuning;
     final appliedTuningShortLabel = appliedTuning.displayLabel
         .split(' (')
         .first;
@@ -138,10 +141,16 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
     final bgGradient = isDark
         ? const [Color(0xFF1B1E1D), Color(0xFF141716), Color(0xFF0F1211)]
         : const [Color(0xFFFFFFFF), Color(0xFFF4F7FC), Color(0xFFE8EEF7)];
-    final textPrimary = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final textSecondary = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
     final accentColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final chipBgColor = isDark ? AppColors.darkSurface : const Color(0xFFF1F5F9);
+    final chipBgColor = isDark
+        ? AppColors.darkSurface
+        : const Color(0xFFF1F5F9);
 
     return Scaffold(
       body: Container(
@@ -210,7 +219,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                         children: [
                                           TextSpan(
                                             text: 'Tuner',
-                                            style: TextStyle(color: accentColor),
+                                            style: TextStyle(
+                                              color: accentColor,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -248,8 +259,12 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: accentColor.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(4),
+                                          color: accentColor.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: Text(
                                           appliedTuningShortLabel,
@@ -342,7 +357,8 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     HapticFeedback.selectionClick();
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const AppPreferencesScreen(),
+                                        builder: (_) =>
+                                            const AppPreferencesScreen(),
                                       ),
                                     );
                                   },
@@ -404,7 +420,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        color: isDark ? AppColors.darkTextPrimary : const Color(0xFF475569),
+                                        color: isDark
+                                            ? AppColors.darkTextPrimary
+                                            : const Color(0xFF475569),
                                       ),
                                     ),
                                   ),
@@ -439,12 +457,18 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isTuned
-                                          ? (isDark ? const Color(0xFF0F382B) : const Color(0xFFE6F9F0))
-                                          : (isDark ? const Color(0xFF3E1C1F) : const Color(0xFFFFF0F0)),
+                                          ? (isDark
+                                                ? const Color(0xFF0F382B)
+                                                : const Color(0xFFE6F9F0))
+                                          : (isDark
+                                                ? const Color(0xFF3E1C1F)
+                                                : const Color(0xFFFFF0F0)),
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
                                         color: isTuned
-                                            ? (isDark ? AppColors.darkSecondary : const Color(0xFF00B894))
+                                            ? (isDark
+                                                  ? AppColors.darkSecondary
+                                                  : const Color(0xFF00B894))
                                             : AppColors.darkTertiary,
                                         width: 1.2,
                                       ),
@@ -455,7 +479,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                         fontSize: 11,
                                         fontWeight: FontWeight.w900,
                                         color: isTuned
-                                            ? (isDark ? AppColors.darkSecondary : const Color(0xFF00B894))
+                                            ? (isDark
+                                                  ? AppColors.darkSecondary
+                                                  : const Color(0xFF00B894))
                                             : AppColors.darkTertiary,
                                         letterSpacing: 0.5,
                                       ),
@@ -495,17 +521,33 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                         child: Stack(
                           alignment: Alignment.bottomCenter,
                           children: [
-                            PhotoHeadstockWidget(
-                              activeStringNumber: tunerState.activeStringNumber,
-                              stringLabels: stringLabels,
-                              tunedStrings: tunerState.tunedStrings,
-                              tuningProgress: tunerState.tuningProgress,
-                              onSelectString: (stringNum) {
-                                ref
-                                    .read(tunerProvider.notifier)
-                                    .selectString(stringNum);
-                              },
-                            ),
+                            if (tunerSettings.headstockLayout ==
+                                HeadstockLayout.inline)
+                              PhotoHeadstockInlineWidget(
+                                activeStringNumber:
+                                    tunerState.activeStringNumber,
+                                stringLabels: stringLabels,
+                                tunedStrings: tunerState.tunedStrings,
+                                tuningProgress: tunerState.tuningProgress,
+                                onSelectString: (stringNum) {
+                                  ref
+                                      .read(tunerProvider.notifier)
+                                      .selectString(stringNum);
+                                },
+                              )
+                            else
+                              PhotoHeadstockWidget(
+                                activeStringNumber:
+                                    tunerState.activeStringNumber,
+                                stringLabels: stringLabels,
+                                tunedStrings: tunerState.tunedStrings,
+                                tuningProgress: tunerState.tuningProgress,
+                                onSelectString: (stringNum) {
+                                  ref
+                                      .read(tunerProvider.notifier)
+                                      .selectString(stringNum);
+                                },
+                              ),
                             Positioned(
                               bottom: 0,
                               left: 0,
@@ -518,7 +560,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                     end: Alignment.bottomCenter,
                                     colors: [
                                       bgGradient[0].withValues(alpha: 0.0),
-                                      bgGradient.last.withValues(alpha: isDark ? 0.95 : 0.8),
+                                      bgGradient.last.withValues(
+                                        alpha: isDark ? 0.95 : 0.8,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -548,7 +592,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkSurface : Colors.white,
+                            color: isDark
+                                ? AppColors.darkSurface
+                                : Colors.white,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -599,7 +645,9 @@ class TunerGridBackgroundPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
     final dotPaint = Paint()
       ..color = primaryColor.withValues(alpha: isDark ? 0.22 : 0.12)
       ..style = PaintingStyle.fill;

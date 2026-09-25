@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/tuner/presentation/screens/app_startup_screen.dart';
 import 'features/tuner/presentation/providers/theme_provider.dart';
-import 'features/tuner/presentation/screens/main_shell_screen.dart';
+
+//import 'features/tuner/presentation/screens/main_shell_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: PickTunerApp()));
@@ -62,7 +64,7 @@ class PickTunerApp extends ConsumerWidget {
         ),
       ),
 
-      home: const MainShellScreen(),
+      home: const AppStartupScreen(),
     );
   }
 }

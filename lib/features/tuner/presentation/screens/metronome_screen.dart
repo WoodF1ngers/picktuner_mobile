@@ -16,12 +16,20 @@ class MetronomeScreen extends ConsumerWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-    final textPrimary = isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F);
-    final textSecondary = isDark ? AppColors.darkTextSecondary : const Color(0xFF464554);
-    final primaryColor = isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7);
+    final textPrimary = isDark
+        ? AppColors.darkTextPrimary
+        : const Color(0xFF161D1F);
+    final textSecondary = isDark
+        ? AppColors.darkTextSecondary
+        : const Color(0xFF464554);
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : const Color(0xFF6C5CE7);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkNeutralBackground : const Color(0xFFF4FAFD),
+      backgroundColor: isDark
+          ? AppColors.darkNeutralBackground
+          : const Color(0xFFF4FAFD),
       body: SafeArea(
         // Reemplazamos SingleChildScrollView + Column por ListView
         child: ListView(
@@ -43,7 +51,9 @@ class MetronomeScreen extends ConsumerWidget {
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSecondary : const Color(0xFF006B55),
+                        color: isDark
+                            ? AppColors.darkSecondary
+                            : const Color(0xFF006B55),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -65,16 +75,14 @@ class MetronomeScreen extends ConsumerWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurfaceVariant : const Color(0xFFE8EFF1),
+                    color: isDark
+                        ? AppColors.darkSurfaceVariant
+                        : const Color(0xFFE8EFF1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.graphic_eq,
-                        size: 16,
-                        color: primaryColor,
-                      ),
+                      Icon(Icons.graphic_eq, size: 16, color: primaryColor),
                       const SizedBox(width: 4),
                       Text(
                         'Clásico / Beep',
@@ -120,7 +128,10 @@ class MetronomeScreen extends ConsumerWidget {
                       children: [
                         CustomPaint(
                           size: const Size(230, 230),
-                          painter: MetronomeArcPainter(bpm: state.bpm, isDark: isDark),
+                          painter: MetronomeArcPainter(
+                            bpm: state.bpm,
+                            isDark: isDark,
+                          ),
                         ),
                         Column(
                           mainAxisSize: MainAxisSize.min,
@@ -494,9 +505,15 @@ class MetronomeArcPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 12;
 
-    final primaryColor = isDark ? AppColors.darkPrimary : const Color(0xFF6757E2);
-    final secondaryColor = isDark ? AppColors.darkSecondary : const Color(0xFF4029BA);
-    final trackColor = isDark ? AppColors.darkSurfaceVariant : const Color(0xFFE8EFF1);
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : const Color(0xFF6757E2);
+    final secondaryColor = isDark
+        ? AppColors.darkSecondary
+        : const Color(0xFF4029BA);
+    final trackColor = isDark
+        ? AppColors.darkSurfaceVariant
+        : const Color(0xFFE8EFF1);
 
     // Background track
     final bgPaint = Paint()
@@ -512,9 +529,8 @@ class MetronomeArcPainter extends CustomPainter {
     final sweepAngle = 2 * math.pi * progressFraction;
 
     final arcPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [primaryColor, secondaryColor],
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..shader = LinearGradient(colors: [primaryColor, secondaryColor])
+          .createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 9
       ..strokeCap = StrokeCap.round;
@@ -535,7 +551,8 @@ class MetronomeArcPainter extends CustomPainter {
     );
 
     final knobOuter = Paint()..color = secondaryColor;
-    final knobInner = Paint()..color = isDark ? AppColors.darkTextPrimary : Colors.white;
+    final knobInner = Paint()
+      ..color = isDark ? AppColors.darkTextPrimary : Colors.white;
 
     canvas.drawCircle(knobOffset, 7, knobOuter);
     canvas.drawCircle(knobOffset, 4, knobInner);

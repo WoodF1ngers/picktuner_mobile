@@ -132,7 +132,7 @@ flutter:
     - assets/sounds/tick_accent.wav
     - assets/sounds/tick_normal.wav
     - assets/images/headstock_3_3.png
-
+    - assets/images/headstock_6_inline.png
 
 
   # The following line ensures that the Material Icons font is

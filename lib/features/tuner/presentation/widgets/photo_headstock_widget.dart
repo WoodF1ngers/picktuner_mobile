@@ -119,7 +119,7 @@ class PhotoHeadstockWidget extends StatelessWidget {
                 ),
               ),
               for (int i = 1; i <= 6; i++)
-                _AnimatedBadgeWidget(
+                HeadstockBadgeWidget(
                   key: ValueKey('badge_$i'),
                   stringNumber: i,
                   label: _getLabel(i),
@@ -145,7 +145,7 @@ class PhotoHeadstockWidget extends StatelessWidget {
   }
 }
 
-class _AnimatedBadgeWidget extends StatefulWidget {
+class HeadstockBadgeWidget extends StatefulWidget {
   final int stringNumber;
   final String label;
   final Offset centerInCanvas;
@@ -156,8 +156,9 @@ class _AnimatedBadgeWidget extends StatefulWidget {
   final bool isTuned;
   final double progress;
   final VoidCallback onTap;
+  final double baseSize;
 
-  const _AnimatedBadgeWidget({
+  const HeadstockBadgeWidget({
     super.key,
     required this.stringNumber,
     required this.label,
@@ -169,13 +170,14 @@ class _AnimatedBadgeWidget extends StatefulWidget {
     required this.isTuned,
     required this.progress,
     required this.onTap,
+    this.baseSize = 192.0,
   });
 
   @override
-  State<_AnimatedBadgeWidget> createState() => _AnimatedBadgeWidgetState();
+  State<HeadstockBadgeWidget> createState() => _HeadstockBadgeWidgetState();
 }
 
-class _AnimatedBadgeWidgetState extends State<_AnimatedBadgeWidget>
+class _HeadstockBadgeWidgetState extends State<HeadstockBadgeWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -236,7 +238,7 @@ class _AnimatedBadgeWidgetState extends State<_AnimatedBadgeWidget>
   }
 
   @override
-  void didUpdateWidget(covariant _AnimatedBadgeWidget oldWidget) {
+  void didUpdateWidget(covariant HeadstockBadgeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!oldWidget.isTuned && widget.isTuned) {
       // Vibra fuerte al detectar la cuerda en tono perfecto
@@ -255,7 +257,7 @@ class _AnimatedBadgeWidgetState extends State<_AnimatedBadgeWidget>
 
   @override
   Widget build(BuildContext context) {
-    const double baseSize = 192.0;
+    final double baseSize = widget.baseSize;
     final double realSize = baseSize * widget.scale;
 
     final double screenCenterX =
