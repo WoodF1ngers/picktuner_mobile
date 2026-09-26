@@ -18,7 +18,7 @@ class PhotoHeadstockInlineWidget extends StatelessWidget {
 
   const PhotoHeadstockInlineWidget({
     super.key,
-    this.activeStringNumber,
+    required this.activeStringNumber,
     this.stringLabels,
     this.tunedStrings = const {},
     this.tuningProgress = 0.0,
@@ -28,7 +28,7 @@ class PhotoHeadstockInlineWidget extends StatelessWidget {
   static const double _canvasWidth = 1080.0;
   static const double _canvasHeight = 1920.0;
 
-  static const String _assetPath = 'assets/images/headstock_6_inline.png';
+  static const String _assetPath = 'assets/images/headstock_6_inline.webp';
 
   // Los paths proceden de Illustrator y están en las coordenadas originales
   // del canvas 1080 x 1920. No aplicamos el translate del <g> del SVG porque
@@ -166,16 +166,14 @@ class _InlineSvgElementsPainter extends CustomPainter {
   final Map<int, String> pegSvgPaths;
 
   _InlineSvgElementsPainter({
-    this.activeStringNumber,
+    required this.activeStringNumber,
     required this.stringSvgPaths,
     required this.pegSvgPaths,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final String? stringData = activeStringNumber == null
-        ? null
-        : stringSvgPaths[activeStringNumber];
+    final String? stringData = stringSvgPaths[activeStringNumber];
     if (stringData == null) return;
 
     final Path stringPath = parseSvgPathData(stringData);
@@ -198,9 +196,7 @@ class _InlineSvgElementsPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(stringPath, corePaint);
 
-    final String? pegData = activeStringNumber == null
-        ? null
-        : pegSvgPaths[activeStringNumber];
+    final String? pegData = pegSvgPaths[activeStringNumber];
     if (pegData != null) {
       final Path pegPath = parseSvgPathData(pegData);
       final Paint pegHighlight = Paint()

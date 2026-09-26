@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/theme_provider.dart';
+import 'app_account_screen.dart';
 
 class AppPreferencesScreen extends ConsumerWidget {
   const AppPreferencesScreen({super.key});
@@ -17,9 +18,15 @@ class AppPreferencesScreen extends ConsumerWidget {
         ? AppColors.darkNeutralBackground
         : AppColors.lightNeutralBackground;
     final cardColor = isDark ? AppColors.darkSurface : Colors.white;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subtitleColor = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+    final subtitleColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -27,7 +34,11 @@ class AppPreferencesScreen extends ConsumerWidget {
         backgroundColor: cardColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: textColor,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -39,6 +50,24 @@ class AppPreferencesScreen extends ConsumerWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              tooltip: 'Cuenta',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AppAccountScreen()),
+                );
+              },
+              icon: Icon(
+                Icons.account_circle_outlined,
+                color: primaryColor,
+                size: 25,
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -91,7 +120,8 @@ class AppPreferencesScreen extends ConsumerWidget {
                         child: _ThemeCardTile(
                           title: 'Sistema',
                           icon: Icons.brightness_auto_rounded,
-                          isSelected: prefs.themeOption == AppThemeOption.system,
+                          isSelected:
+                              prefs.themeOption == AppThemeOption.system,
                           onTap: () {
                             HapticFeedback.selectionClick();
                             notifier.setThemeOption(AppThemeOption.system);
@@ -138,7 +168,11 @@ class AppPreferencesScreen extends ConsumerWidget {
                   // Muestra de la paleta "Precision Audio Dark"
                   Row(
                     children: [
-                      Icon(Icons.color_lens_outlined, size: 16, color: primaryColor),
+                      Icon(
+                        Icons.color_lens_outlined,
+                        size: 16,
+                        color: primaryColor,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Paleta "Precision Audio":',
@@ -149,13 +183,31 @@ class AppPreferencesScreen extends ConsumerWidget {
                         ),
                       ),
                       const Spacer(),
-                      _ColorDot(color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary, tooltip: 'Primary (#585AE8)'),
+                      _ColorDot(
+                        color: isDark
+                            ? AppColors.darkPrimary
+                            : AppColors.lightPrimary,
+                        tooltip: 'Primary (#585AE8)',
+                      ),
                       const SizedBox(width: 6),
-                      _ColorDot(color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary, tooltip: 'Secondary (#07B097)'),
+                      _ColorDot(
+                        color: isDark
+                            ? AppColors.darkSecondary
+                            : AppColors.lightSecondary,
+                        tooltip: 'Secondary (#07B097)',
+                      ),
                       const SizedBox(width: 6),
-                      _ColorDot(color: AppColors.darkTertiary, tooltip: 'Tertiary (#FF7675)'),
+                      _ColorDot(
+                        color: AppColors.darkTertiary,
+                        tooltip: 'Tertiary (#FF7675)',
+                      ),
                       const SizedBox(width: 6),
-                      _ColorDot(color: isDark ? AppColors.darkSurface : const Color(0xFFE2E8F0), tooltip: 'Neutral (#232827)'),
+                      _ColorDot(
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : const Color(0xFFE2E8F0),
+                        tooltip: 'Neutral (#232827)',
+                      ),
                     ],
                   ),
                 ],
@@ -234,7 +286,9 @@ class AppPreferencesScreen extends ConsumerWidget {
                           children: [
                             IconButton(
                               onPressed: prefs.referenceA4 > 430.0
-                                  ? () => notifier.setReferenceA4(prefs.referenceA4 - 0.5)
+                                  ? () => notifier.setReferenceA4(
+                                      prefs.referenceA4 - 0.5,
+                                    )
                                   : null,
                               icon: const Icon(Icons.remove_circle_outline),
                               color: primaryColor,
@@ -243,7 +297,9 @@ class AppPreferencesScreen extends ConsumerWidget {
                               child: SliderTheme(
                                 data: SliderThemeData(
                                   activeTrackColor: primaryColor,
-                                  inactiveTrackColor: primaryColor.withValues(alpha: 0.2),
+                                  inactiveTrackColor: primaryColor.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   thumbColor: primaryColor,
                                 ),
                                 child: Slider(
@@ -251,13 +307,16 @@ class AppPreferencesScreen extends ConsumerWidget {
                                   min: 430.0,
                                   max: 450.0,
                                   divisions: 40,
-                                  onChanged: (val) => notifier.setReferenceA4(val),
+                                  onChanged: (val) =>
+                                      notifier.setReferenceA4(val),
                                 ),
                               ),
                             ),
                             IconButton(
                               onPressed: prefs.referenceA4 < 450.0
-                                  ? () => notifier.setReferenceA4(prefs.referenceA4 + 0.5)
+                                  ? () => notifier.setReferenceA4(
+                                      prefs.referenceA4 + 0.5,
+                                    )
                                   : null,
                               icon: const Icon(Icons.add_circle_outline),
                               color: primaryColor,
@@ -289,7 +348,8 @@ class AppPreferencesScreen extends ConsumerWidget {
                   // Mostrar Hz
                   _SwitchPreferenceTile(
                     title: 'Mostrar Frecuencia (Hz)',
-                    subtitle: 'Exhibe los hercios exactos bajo la nota detectada.',
+                    subtitle:
+                        'Exhibe los hercios exactos bajo la nota detectada.',
                     icon: Icons.speed_rounded,
                     value: prefs.showFrequencyHz,
                     onChanged: (val) => notifier.toggleShowFrequencyHz(val),
@@ -331,7 +391,9 @@ class AppPreferencesScreen extends ConsumerWidget {
                     isDark: isDark,
                     onTap: () {
                       final levels = ['Baja', 'Media', 'Alta'];
-                      final nextIndex = (levels.indexOf(prefs.sensitivity) + 1) % levels.length;
+                      final nextIndex =
+                          (levels.indexOf(prefs.sensitivity) + 1) %
+                          levels.length;
                       notifier.setSensitivity(levels[nextIndex]);
                     },
                   ),
@@ -347,7 +409,9 @@ class AppPreferencesScreen extends ConsumerWidget {
                         'Estándar (±4c)',
                         'Estricto (±2c)',
                       ];
-                      final nextIndex = (options.indexOf(prefs.tolerance) + 1) % options.length;
+                      final nextIndex =
+                          (options.indexOf(prefs.tolerance) + 1) %
+                          options.length;
                       notifier.setTolerance(options[nextIndex]);
                     },
                   ),
@@ -493,7 +557,9 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final color = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
 
     return Row(
       children: [
@@ -534,10 +600,14 @@ class _ThemeCardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = accentColor ?? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary);
+    final activeColor =
+        accentColor ??
+        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary);
     final borderColor = isSelected
         ? activeColor
-        : (isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE2E8F0));
+        : (isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : const Color(0xFFE2E8F0));
     final containerBg = isSelected
         ? activeColor.withValues(alpha: isDark ? 0.2 : 0.08)
         : (isDark ? AppColors.darkSurfaceVariant : const Color(0xFFF8FAFC));
@@ -550,10 +620,7 @@ class _ThemeCardTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: containerBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: borderColor,
-            width: isSelected ? 2.0 : 1.0,
-          ),
+          border: Border.all(color: borderColor, width: isSelected ? 2.0 : 1.0),
         ),
         child: Column(
           children: [
@@ -561,7 +628,9 @@ class _ThemeCardTile extends StatelessWidget {
               icon,
               color: isSelected
                   ? activeColor
-                  : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                  : (isDark
+                        ? AppColors.darkTextSecondary
+                        : AppColors.lightTextSecondary),
               size: 22,
             ),
             const SizedBox(height: 8),
@@ -572,7 +641,9 @@ class _ThemeCardTile extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                 color: isSelected
                     ? activeColor
-                    : (isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary),
+                    : (isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.lightTextPrimary),
               ),
             ),
             if (subtitle != null) ...[
@@ -610,9 +681,15 @@ class _PreferenceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subtitleColor = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+    final subtitleColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
 
     return ListTile(
       onTap: onTap,
@@ -657,9 +734,15 @@ class _SwitchPreferenceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final subtitleColor = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.lightTextPrimary;
+    final subtitleColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.lightTextSecondary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
 
     return SwitchListTile.adaptive(
       value: value,
@@ -698,7 +781,10 @@ class _ColorDot extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
       ),
     );

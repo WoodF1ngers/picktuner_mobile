@@ -131,8 +131,11 @@ flutter:
   assets:
     - assets/sounds/tick_accent.wav
     - assets/sounds/tick_normal.wav
-    - assets/images/headstock_3_3.png
-    - assets/images/headstock_6_inline.png
+    - assets/images/headstock_3_3.webp
+    - assets/images/headstock_6_inline.webp
+    - assets/images/picktuner_loader_guitar_blended.webp
+    - assets/images/picktuner_isotipo.svg
+  
 
 
   # The following line ensures that the Material Icons font is

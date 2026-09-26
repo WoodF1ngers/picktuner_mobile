@@ -44,6 +44,27 @@ class _AppStartupScreenState extends State<AppStartupScreen>
     )..repeat();
 
     _startSequence();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheStartupAssets();
+    });
+  }
+
+  Future<void> _precacheStartupAssets() async {
+    const assets = [
+      'assets/images/headstock_3_3.webp',
+      'assets/images/headstock_6_inline.webp',
+      'assets/images/picktuner_loader_guitar_blended.webp',
+    ];
+
+    for (final asset in assets) {
+      if (!mounted) return;
+      try {
+        await precacheImage(AssetImage(asset), context);
+      } catch (_) {
+        // El precache es una optimización; un fallo aquí no debe impedir el arranque.
+      }
+    }
   }
 
   Future<void> _startSequence() async {
@@ -58,10 +79,10 @@ class _AppStartupScreenState extends State<AppStartupScreen>
     _finished = true;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        pageBuilder: (_, __, ___) => const MainShellScreen(),
+        pageBuilder: (_, _, _) => const MainShellScreen(),
         transitionDuration: const Duration(milliseconds: 300),
         reverseTransitionDuration: Duration.zero,
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -167,7 +188,23 @@ class _AppStartupScreenState extends State<AppStartupScreen>
         return Stack(
           fit: StackFit.expand,
           children: [
-            const Positioned.fill(child: _BrandBackground()),
+            const Positioned.fill(child: _BrandBackground(showGlow: false)),
+            Positioned(
+              left: -8,
+              right: -8,
+              bottom: 0,
+              height: 430,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 1.0,
+                  child: Image.asset(
+                    'assets/images/picktuner_loader_guitar_blended.webp',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 26),
@@ -251,16 +288,20 @@ class _AppStartupScreenState extends State<AppStartupScreen>
 }
 
 class _BrandBackground extends StatelessWidget {
-  const _BrandBackground();
+  const _BrandBackground({this.showGlow = true});
+
+  final bool showGlow;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(painter: BrandBackgroundPainter());
+    return CustomPaint(painter: BrandBackgroundPainter(showGlow: showGlow));
   }
 }
 
 class BrandBackgroundPainter extends CustomPainter {
-  const BrandBackgroundPainter();
+  const BrandBackgroundPainter({this.showGlow = true});
+
+  final bool showGlow;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -277,24 +318,26 @@ class BrandBackgroundPainter extends CustomPainter {
       ).createShader(rect);
     canvas.drawRect(rect, background);
 
-    final glow = Paint()
-      ..shader =
-          RadialGradient(
-            colors: [
-              AppColors.darkPrimary.withValues(alpha: .15),
-              AppColors.darkPrimary.withValues(alpha: 0),
-            ],
-          ).createShader(
-            Rect.fromCircle(
-              center: Offset(size.width * .5, size.height * .34),
-              radius: size.width * .62,
-            ),
-          );
-    canvas.drawCircle(
-      Offset(size.width * .5, size.height * .34),
-      size.width * .62,
-      glow,
-    );
+    if (showGlow) {
+      final glow = Paint()
+        ..shader =
+            RadialGradient(
+              colors: [
+                AppColors.darkPrimary.withValues(alpha: .15),
+                AppColors.darkPrimary.withValues(alpha: 0),
+              ],
+            ).createShader(
+              Rect.fromCircle(
+                center: Offset(size.width * .5, size.height * .34),
+                radius: size.width * .62,
+              ),
+            );
+      canvas.drawCircle(
+        Offset(size.width * .5, size.height * .34),
+        size.width * .62,
+        glow,
+      );
+    }
 
     final wavePaint = Paint()
       ..style = PaintingStyle.stroke
@@ -320,7 +363,8 @@ class BrandBackgroundPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant BrandBackgroundPainter oldDelegate) =>
+      oldDelegate.showGlow != showGlow;
 }
 
 class FrequencyLoaderPainter extends CustomPainter {

@@ -241,13 +241,13 @@ class MetronomeScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: cardColor,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
@@ -255,7 +255,7 @@ class MetronomeScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF464554),
+                          color: textSecondary,
                         ),
                       ),
                       Text(
@@ -263,7 +263,7 @@ class MetronomeScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF4E3BC8),
+                          color: primaryColor,
                         ),
                       ),
                     ],
@@ -278,11 +278,13 @@ class MetronomeScreen extends ConsumerWidget {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isSelected
-                                  ? const Color(0xFF6757E2)
-                                  : const Color(0xFFEEF5F7),
+                                  ? primaryColor
+                                  : (isDark
+                                        ? AppColors.darkSurfaceVariant
+                                        : const Color(0xFFEEF5F7)),
                               foregroundColor: isSelected
                                   ? Colors.white
-                                  : const Color(0xFF464554),
+                                  : textSecondary,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -299,20 +301,22 @@ class MetronomeScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'PULSO EN VIVO',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF464554),
+                          color: textSecondary,
                         ),
                       ),
                       Text(
                         '${state.currentBeat + 1} / ${state.timeSignature}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF006B55),
+                          color: isDark
+                              ? AppColors.darkSecondary
+                              : const Color(0xFF006B55),
                         ),
                       ),
                     ],
@@ -335,7 +339,9 @@ class MetronomeScreen extends ConsumerWidget {
                                 ? (isAccent
                                       ? const Color(0xFF6757E2)
                                       : const Color(0xFF6DFAD2))
-                                : const Color(0xFFEEF5F7),
+                                : (isDark
+                                      ? AppColors.darkSurfaceVariant
+                                      : const Color(0xFFEEF5F7)),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -346,8 +352,10 @@ class MetronomeScreen extends ConsumerWidget {
                                 color: isActive
                                     ? (isAccent
                                           ? Colors.white
-                                          : const Color(0xFF005140))
-                                    : const Color(0xFF464554),
+                                          : (isDark
+                                                ? AppColors.darkSecondary
+                                                : const Color(0xFF005140)))
+                                    : textSecondary,
                               ),
                             ),
                           ),
@@ -364,8 +372,10 @@ class MetronomeScreen extends ConsumerWidget {
                         flex: 2,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE8EFF1),
-                            foregroundColor: const Color(0xFF161D1F),
+                            backgroundColor: isDark
+                                ? AppColors.darkSurfaceVariant
+                                : const Color(0xFFE8EFF1),
+                            foregroundColor: textPrimary,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -392,8 +402,10 @@ class MetronomeScreen extends ConsumerWidget {
                         flex: 1,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE8EFF1),
-                            foregroundColor: const Color(0xFF161D1F),
+                            backgroundColor: isDark
+                                ? AppColors.darkSurfaceVariant
+                                : const Color(0xFFE8EFF1),
+                            foregroundColor: textPrimary,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -406,7 +418,7 @@ class MetronomeScreen extends ConsumerWidget {
                             size: 20,
                             color: state.isMuted
                                 ? const Color(0xFFBA1A1A)
-                                : const Color(0xFF464554),
+                                : textSecondary,
                           ),
                           label: Text(
                             state.isMuted ? 'Mute' : 'Audio',
@@ -429,13 +441,20 @@ class MetronomeScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF6DFAD2).withValues(alpha: 0.25),
+                color: isDark
+                    ? AppColors.darkSecondary.withValues(alpha: 0.16)
+                    : const Color(0xFF6DFAD2).withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.lightbulb_outline, color: Color(0xFF006B55)),
-                  SizedBox(width: 10),
+                  Icon(
+                    Icons.lightbulb_outline,
+                    color: isDark
+                        ? AppColors.darkSecondary
+                        : const Color(0xFF006B55),
+                  ),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,14 +464,18 @@ class MetronomeScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF005140),
+                            color: isDark
+                                ? AppColors.darkSecondary
+                                : const Color(0xFF005140),
                           ),
                         ),
                         Text(
                           'Comienza a 60 BPM para dominar el cambio limpio de acordes.',
                           style: TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF005140),
+                            color: isDark
+                                ? AppColors.darkTextPrimary
+                                : const Color(0xFF005140),
                           ),
                         ),
                       ],

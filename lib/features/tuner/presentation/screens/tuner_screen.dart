@@ -287,9 +287,9 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                 Container(
                                   padding: const EdgeInsets.only(
                                     left: 14,
-                                    right: 4,
-                                    top: 4,
-                                    bottom: 4,
+                                    right: 2,
+                                    top: 2,
+                                    bottom: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: chipBgColor.withValues(alpha: 0.8),
@@ -348,7 +348,7 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                                 const SizedBox(width: 4),
                                 IconButton(
                                   icon: Icon(
-                                    Icons.tune_rounded,
+                                    Icons.settings_outlined,
                                     color: accentColor,
                                     size: 22,
                                   ),
@@ -434,76 +434,6 @@ class _TunerScreenState extends ConsumerState<TunerScreen> {
                             ),
 
                             const SizedBox(height: 24),
-
-                            // ESTADO TENSAR / DESTENSAR Y BADGE DE AFINACIÓN
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 28,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    '« TENSAR',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: textSecondary,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isTuned
-                                          ? (isDark
-                                                ? const Color(0xFF0F382B)
-                                                : const Color(0xFFE6F9F0))
-                                          : (isDark
-                                                ? const Color(0xFF3E1C1F)
-                                                : const Color(0xFFFFF0F0)),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: isTuned
-                                            ? (isDark
-                                                  ? AppColors.darkSecondary
-                                                  : const Color(0xFF00B894))
-                                            : AppColors.darkTertiary,
-                                        width: 1.2,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      isTuned ? 'AFINADO' : 'DESAFINADO',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        color: isTuned
-                                            ? (isDark
-                                                  ? AppColors.darkSecondary
-                                                  : const Color(0xFF00B894))
-                                            : AppColors.darkTertiary,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    'DESTENSAR »',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: textSecondary,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 10),
 
                             // MEDIDOR DE PÚA
                             Padding(

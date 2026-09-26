@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TuningPickGauge extends StatelessWidget {
-  final double cents; // Desviación en cents (-50.0 a +50.0)
+  final double cents;
   final bool isTuned;
   final bool hasSignal;
 
@@ -20,14 +20,14 @@ class TuningPickGauge extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 48,
+          height: 76,
           width: double.infinity,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final double width = constraints.maxWidth;
               final double center = width / 2;
               final double maxOffset = (width / 2) - 24;
-              final double normalizedCents = (cents.clamp(-50.0, 50.0)) / 50.0;
+              final double normalizedCents = cents.clamp(-50.0, 50.0) / 50.0;
               final double xPos = center + (normalizedCents * maxOffset);
               final bool showDirection =
                   hasSignal && !isTuned && cents.abs() > inTuneCents;
@@ -54,24 +54,31 @@ class TuningPickGauge extends StatelessWidget {
                       left: needsTension
                           ? (xPos - 18 - 58).clamp(0.0, width - 66)
                           : (xPos + 18).clamp(0.0, width - 66),
-                      top: 15,
+                      top: 34,
                       child: Text(
                         needsTension ? 'TENSAR' : 'DESTENSAR',
                         style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w300,
                           letterSpacing: 0.5,
                           color: Color(0xFF64748B),
                         ),
                       ),
                     ),
 
+                  // La etiqueta AFINADO se coloca sobre la púa, centrada en
+                  // el mismo eje que ella, para que nunca quede detrás.
                   if (showInTune)
                     Positioned(
-                      left: (xPos - 38).clamp(0.0, width - 76),
-                      top: 15,
+                      left: (xPos - 48).clamp(0.0, width - 96),
+                      top: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
+                        width: 96,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE6F9F0),
                           borderRadius: BorderRadius.circular(20),
@@ -92,21 +99,20 @@ class TuningPickGauge extends StatelessWidget {
                       ),
                     ),
 
-                  if (hasSignal)
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 70),
-                      curve: Curves.easeOutCubic,
-                      left: xPos - 18,
-                      top: 2,
-                      child: CustomPaint(
-                        size: const Size(36, 42),
-                        painter: GuitarPickPainter(
-                          color: isTuned
-                              ? const Color(0xFF00B894)
-                              : const Color(0xFF6C5CE7),
-                        ),
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 70),
+                    curve: Curves.easeOutCubic,
+                    left: (hasSignal ? xPos : center) - 18,
+                    top: 27,
+                    child: CustomPaint(
+                      size: const Size(36, 42),
+                      painter: GuitarPickPainter(
+                        color: isTuned
+                            ? const Color(0xFF00B894)
+                            : const Color(0xFF6C5CE7),
                       ),
                     ),
+                  ),
                 ],
               );
             },
@@ -145,7 +151,8 @@ class TuningPickGauge extends StatelessWidget {
   }
 }
 
-/// Vector estilizado para renderizar una púa de guitarra realista
+/// Púa del indicador basada en el mismo lenguaje geométrico del isotipo
+/// oficial: silueta más ancha, hombros suaves y cinco líneas verticales.
 class GuitarPickPainter extends CustomPainter {
   final Color color;
 
@@ -155,91 +162,75 @@ class GuitarPickPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final double w = size.width;
     final double h = size.height;
+    final rect = Offset.zero & size;
 
-    // 1. PATH DE PÚA ANATÓMICAMENTE REALISTA (Estilo Fender 351)
     final Path pickPath = Path()
-      ..moveTo(w * 0.25, 0)
-      // Borde superior suavemente curvado
-      ..cubicTo(w * 0.45, h * 0.02, w * 0.55, h * 0.02, w * 0.75, 0)
-      // Hombro derecho amplio
-      ..cubicTo(w * 0.95, h * 0.02, w, h * 0.22, w, h * 0.38)
-      // Curva descendente hacia la punta
-      ..cubicTo(w * 1.0, h * 0.62, w * 0.68, h * 0.91, w * 0.54, h * 0.98)
-      // Punta redondeada (evita el ángulo en 'V' recto)
-      ..cubicTo(w * 0.52, h * 0.995, w * 0.48, h * 0.995, w * 0.46, h * 0.98)
-      // Curva ascendente por el lado izquierdo
-      ..cubicTo(w * 0.32, h * 0.91, 0, h * 0.62, 0, h * 0.38)
-      // Hombro izquierdo amplio
-      ..cubicTo(0, h * 0.22, w * 0.05, h * 0.02, w * 0.25, 0)
+      ..moveTo(w * 0.50, h * 0.012)
+      ..cubicTo(w * 0.76, h * 0.012, w * 0.96, h * 0.085, w * 0.985, h * 0.245)
+      ..cubicTo(w * 1.01, h * 0.435, w * 0.91, h * 0.68, w * 0.72, h * 0.865)
+      ..cubicTo(w * 0.63, h * 0.95, w * 0.55, h * 0.99, w * 0.50, h * 0.998)
+      ..cubicTo(w * 0.45, h * 0.99, w * 0.37, h * 0.95, w * 0.28, h * 0.865)
+      ..cubicTo(w * 0.09, h * 0.68, w * -0.01, h * 0.435, w * 0.015, h * 0.245)
+      ..cubicTo(w * 0.04, h * 0.085, w * 0.24, h * 0.012, w * 0.50, h * 0.012)
       ..close();
 
-    // 2. RESPLANDOR Y SOMBRA PROYECTADA (Drop Shadow)
+    // Sombra/glow muy sutil para conservar la presencia de la púa sin hacerla
+    // pesada sobre el afinador.
     canvas.drawPath(
       pickPath,
       Paint()
-        ..color = color.withValues(alpha: 0.30)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+        ..color = color.withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
 
-    // 3. GRADIENTE DE VOLUMEN 3D (Efecto biselado/curvo)
     final Paint bodyPaint = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.2, -0.4), // Punto de luz descentrado
-        radius: 0.85,
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          // Iluminación central levemente más clara
-          Color.alphaBlend(Colors.white.withValues(alpha: 0.25), color),
+          Color.alphaBlend(Colors.white.withValues(alpha: 0.18), color),
           color,
-          // Sombra de borde levemente más oscura
-          Color.alphaBlend(Colors.black.withValues(alpha: 0.35), color),
+          Color.alphaBlend(Colors.black.withValues(alpha: 0.22), color),
         ],
-        stops: const [0.0, 0.65, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, w, h));
+        stops: const [0.0, 0.55, 1.0],
+      ).createShader(rect);
 
     canvas.drawPath(pickPath, bodyPaint);
 
-    // 4. BISLE DE BORDE PULIDO (Stroke sutil)
     final Paint borderPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = Colors.white.withValues(alpha: 0.25);
+      ..strokeWidth = 0.9
+      ..color = Colors.white.withValues(alpha: 0.28);
 
     canvas.drawPath(pickPath, borderPaint);
 
-    // 5. REFLEJO ESPECULAR / BRILLO EN EL HOMBRO IZQUIERDO
-    final Path highlightPath = Path()
-      ..moveTo(w * 0.15, h * 0.08)
-      ..cubicTo(w * 0.35, h * 0.05, w * 0.55, h * 0.05, w * 0.70, h * 0.08)
-      ..cubicTo(w * 0.45, h * 0.14, w * 0.25, h * 0.16, w * 0.15, h * 0.08)
-      ..close();
+    // Las cinco líneas del isotipo, ahora también en la púa del indicador.
+    final bars = <double>[0.25, 0.37, 0.50, 0.63, 0.75];
+    final halfHeights = <double>[0.065, 0.140, 0.230, 0.140, 0.060];
+    final centerY = h * 0.480;
 
-    canvas.drawPath(
-      highlightPath,
-      Paint()..color = Colors.white.withValues(alpha: 0.18),
-    );
+    final Paint barPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.040
+      ..strokeCap = StrokeCap.round
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withValues(alpha: 0.96),
+          Colors.white.withValues(alpha: 0.72),
+        ],
+      ).createShader(rect);
 
-    // 6. TEXTO / LOGO EN EL CENTRO
-    const textStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 10,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -0.5,
-      shadows: [
-        Shadow(color: Colors.black26, offset: Offset(0, 1), blurRadius: 2),
-      ],
-    );
-
-    final textSpan = const TextSpan(text: 'PT', style: textStyle);
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    // Posicionamiento centrado en la zona superior
-    textPainter.paint(
-      canvas,
-      Offset((w - textPainter.width) / 2, (h - textPainter.height) / 2.7),
-    );
+    for (var i = 0; i < bars.length; i++) {
+      final x = w * bars[i];
+      final half = h * halfHeights[i];
+      canvas.drawLine(
+        Offset(x, centerY - half),
+        Offset(x, centerY + half),
+        barPaint,
+      );
+    }
   }
 
   @override

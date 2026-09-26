@@ -1,15 +1,17 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../providers/theme_provider.dart';
 
-/// Logo vectorial de PickTuner. Se dibuja en Flutter para que conserve nitidez
-/// en cualquier densidad de pantalla y no dependa de una imagen rasterizada.
+/// Isotipo vectorial de PickTuner.
+///
+/// La geometría está basada en el SVG de 137.08 x 144 px proporcionado para
+/// la marca. Se dibuja directamente con Canvas para no depender de un PNG.
+/// La silueta exterior se ensanchó ligeramente y se simplificó a pocas curvas
+/// suaves; las cinco barras interiores conservan su proporción independiente.
 class PickTunerLogo extends StatelessWidget {
-  final double size;
-
   const PickTunerLogo({super.key, this.size = 120});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -25,92 +27,59 @@ class _PickTunerLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    final center = Offset(size.width / 2, size.height / 2);
-    final scale = size.width / 120;
+    final w = size.width;
+    final h = size.height;
 
-    final pickPath = Path();
-    pickPath.moveTo(60 * scale, 9 * scale);
-    pickPath.cubicTo(
-      84 * scale,
-      9 * scale,
-      105 * scale,
-      20 * scale,
-      108 * scale,
-      43 * scale,
-    );
-    pickPath.cubicTo(
-      111 * scale,
-      67 * scale,
-      96 * scale,
-      94 * scale,
-      60 * scale,
-      111 * scale,
-    );
-    pickPath.cubicTo(
-      24 * scale,
-      94 * scale,
-      9 * scale,
-      67 * scale,
-      12 * scale,
-      43 * scale,
-    );
-    pickPath.cubicTo(
-      15 * scale,
-      20 * scale,
-      36 * scale,
-      9 * scale,
-      60 * scale,
-      9 * scale,
-    );
-    pickPath.close();
+    // Silueta de púa basada en el SVG 137.08 x 144.
+    // Se mantiene deliberadamente más ancha que la versión anterior,
+    // sin modificar la escala relativa de las barras interiores.
+    final pickPath = Path()
+      ..moveTo(w * 0.50, h * 0.012)
+      ..cubicTo(w * 0.76, h * 0.012, w * 0.96, h * 0.085, w * 0.985, h * 0.245)
+      ..cubicTo(w * 1.01, h * 0.435, w * 0.91, h * 0.68, w * 0.72, h * 0.865)
+      ..cubicTo(w * 0.63, h * 0.95, w * 0.55, h * 0.99, w * 0.50, h * 0.998)
+      ..cubicTo(w * 0.45, h * 0.99, w * 0.37, h * 0.95, w * 0.28, h * 0.865)
+      ..cubicTo(w * 0.09, h * 0.68, w * -0.01, h * 0.435, w * 0.015, h * 0.245)
+      ..cubicTo(w * 0.04, h * 0.085, w * 0.24, h * 0.012, w * 0.50, h * 0.012)
+      ..close();
 
     final outline = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4 * scale
+      ..strokeWidth = w * 0.035
+      ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..shader = const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [AppColors.darkPrimary, AppColors.darkSecondary],
       ).createShader(rect);
+
     canvas.drawPath(pickPath, outline);
 
-    final glow = Paint()
-      ..color = AppColors.darkSecondary.withValues(alpha: .18)
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 12 * scale);
-    canvas.drawPath(pickPath, glow);
+    // Cinco barras, manteniendo su propia proporción y sin ensancharlas con
+    // la silueta exterior.
+    final bars = <double>[0.31, 0.405, 0.50, 0.595, 0.69];
+    final halfHeights = <double>[0.085, 0.165, 0.255, 0.165, 0.085];
+    final centerY = h * 0.490;
 
-    final barHeights = [20.0, 34.0, 49.0, 37.0, 24.0];
-    final barPaint = Paint()
+    final stroke = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.035
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5 * scale
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.darkSecondary, AppColors.darkPrimary],
+        colors: [AppColors.darkPrimary, AppColors.darkSecondary],
       ).createShader(rect);
 
-    const gap = 10.0;
-    final total = (barHeights.length - 1) * gap;
-    final startX = 60 - total / 2;
-    for (int i = 0; i < barHeights.length; i++) {
-      final x = (startX + i * gap) * scale;
-      final half = barHeights[i] * scale / 2;
+    for (var i = 0; i < bars.length; i++) {
+      final x = w * bars[i];
+      final half = h * halfHeights[i];
       canvas.drawLine(
-        Offset(x, center.dy - half),
-        Offset(x, center.dy + half),
-        barPaint,
+        Offset(x, centerY - half),
+        Offset(x, centerY + half),
+        stroke,
       );
-    }
-
-    // Pequeños puntos de frecuencia que refuerzan el concepto de señal.
-    final dotPaint = Paint()
-      ..color = AppColors.darkSecondary.withValues(alpha: .7);
-    for (int i = 0; i < 3; i++) {
-      final angle = -math.pi / 2 + (i - 1) * .45;
-      final p =
-          center + Offset(math.cos(angle), math.sin(angle)) * (43 * scale);
-      canvas.drawCircle(p, 1.8 * scale, dotPaint);
     }
   }
 

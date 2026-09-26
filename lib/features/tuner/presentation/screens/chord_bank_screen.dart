@@ -41,7 +41,9 @@ class _ChordBankScreenState extends ConsumerState<ChordBankScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : const Color(0xFFF4FAFD),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : const Color(0xFFF4FAFD),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
@@ -109,47 +111,84 @@ class _ChordsHeader extends StatelessWidget {
       children: [
         Row(
           children: [
+            // Isotipo PT
             Container(
-              width: 44,
-              height: 44,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkPrimary : const Color(0xFF6757E2),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: (isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7)).withValues(alpha: 0.24),
-                    blurRadius: 16,
+                    color:
+                        (isDark
+                                ? AppColors.darkPrimary
+                                : const Color(0xFF6757E2))
+                            .withValues(alpha: 0.24),
+                    blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.grid_view_rounded,
-                color: Colors.white,
-                size: 20,
+              alignment: Alignment.center,
+              child: const Text(
+                'PT',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
+
             const SizedBox(width: 10),
+
+            // Nombre + sección
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'PickTuner',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F),
-                    letterSpacing: -0.2,
-                    height: 1.0,
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Pick',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : const Color(0xFF161D1F),
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'Tuner',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: isDark
+                              ? AppColors.darkPrimary
+                              : const Color(0xFF6757E2),
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
+                const SizedBox(height: 1),
+
                 Text(
                   'ACORDES',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
-                    letterSpacing: 0.5,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : const Color(0xFF4D5560),
                   ),
                 ),
               ],
@@ -168,18 +207,11 @@ class _ChordsHeader extends StatelessWidget {
               },
               icon: Icon(
                 Icons.settings_outlined,
-                color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : const Color(0xFF464554),
                 size: 22,
               ),
-            ),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkPrimary : const Color(0xFF4E3BC8),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.person, color: Colors.white, size: 18),
             ),
           ],
         ),
@@ -219,7 +251,9 @@ class _SearchBar extends StatelessWidget {
         children: [
           Icon(
             Icons.search,
-            color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : const Color(0xFF767586),
             size: 20,
           ),
           const SizedBox(width: 10),
@@ -230,14 +264,18 @@ class _SearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Buscar acorde (ej. Am, C7, G)...',
                 hintStyle: TextStyle(
-                  color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : const Color(0xFF767586),
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
               ),
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.darkTextPrimary : const Color(0xFF161D1F),
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : const Color(0xFF161D1F),
               ),
             ),
           ),
@@ -248,13 +286,17 @@ class _SearchBar extends StatelessWidget {
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE8EFF1),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : const Color(0xFFE8EFF1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.close,
                   size: 15,
-                  color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : const Color(0xFF767586),
                 ),
               ),
             ),
@@ -343,7 +385,10 @@ class _RootSelector extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: isSelected
-                        ? (isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7)).withValues(alpha: 0.28)
+                        ? (isDark
+                                  ? AppColors.darkPrimary
+                                  : const Color(0xFF6C5CE7))
+                              .withValues(alpha: 0.28)
                         : Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                     blurRadius: isSelected ? 12 : 4,
                   ),
@@ -357,7 +402,9 @@ class _RootSelector extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? AppColors.darkTextPrimary : const Color(0xFF464554)),
+                          : (isDark
+                                ? AppColors.darkTextPrimary
+                                : const Color(0xFF464554)),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -367,7 +414,9 @@ class _RootSelector extends StatelessWidget {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSecondary : const Color(0xFF6DFAD2),
+                        color: isDark
+                            ? AppColors.darkSecondary
+                            : const Color(0xFF6DFAD2),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -428,7 +477,9 @@ class _QualitySelector extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color: isSelected
                       ? Colors.white
-                      : (isDark ? AppColors.darkTextSecondary : const Color(0xFF464554)),
+                      : (isDark
+                            ? AppColors.darkTextSecondary
+                            : const Color(0xFF464554)),
                 ),
               ),
             ),
@@ -466,7 +517,9 @@ class _UnavailableChordCard extends StatelessWidget {
         children: [
           Icon(
             Icons.construction_rounded,
-            color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+            color: isDark
+                ? AppColors.darkTextSecondary
+                : const Color(0xFF767586),
             size: 32,
           ),
           const SizedBox(height: 12),
@@ -485,7 +538,9 @@ class _UnavailableChordCard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.5,
-              color: isDark ? AppColors.darkTextSecondary : const Color(0xFF64748B),
+              color: isDark
+                  ? AppColors.darkTextSecondary
+                  : const Color(0xFF64748B),
             ),
           ),
         ],
@@ -537,7 +592,8 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7)).withValues(alpha: 0.08),
+            color: (isDark ? AppColors.darkPrimary : const Color(0xFF6C5CE7))
+                .withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -561,7 +617,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                            color: isDark
+                                ? AppColors.darkTextPrimary
+                                : Colors.black,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -579,7 +637,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                           child: Text(
                             entry.symbol,
                             style: TextStyle(
-                              color: isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8),
+                              color: isDark
+                                  ? AppColors.darkSecondary
+                                  : const Color(0xFF4E3BC8),
                               fontWeight: FontWeight.w700,
                               fontSize: 14,
                             ),
@@ -592,7 +652,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                       entry.intervalsLabel,
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? AppColors.darkTextSecondary : const Color(0xFF464554),
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : const Color(0xFF464554),
                       ),
                     ),
                   ],
@@ -604,15 +666,21 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE8EFF1),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFFE8EFF1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _isFavorite ? Icons.favorite : Icons.favorite_border,
                     size: 20,
                     color: _isFavorite
-                        ? (isDark ? AppColors.darkTertiary : const Color(0xFFBA1A1A))
-                        : (isDark ? AppColors.darkTextSecondary : const Color(0xFF464554)),
+                        ? (isDark
+                              ? AppColors.darkTertiary
+                              : const Color(0xFFBA1A1A))
+                        : (isDark
+                              ? AppColors.darkTextSecondary
+                              : const Color(0xFF464554)),
                   ),
                 ),
               ),
@@ -623,7 +691,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
             constraints: const BoxConstraints(maxWidth: 280),
             child: AspectRatio(
               aspectRatio: 240 / 200,
-              child: CustomPaint(painter: FretboardPainter(variation, isDark: isDark)),
+              child: CustomPaint(
+                painter: FretboardPainter(variation, isDark: isDark),
+              ),
             ),
           ),
           const SizedBox(height: 4),
@@ -638,7 +708,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : const Color(0xFF767586),
                   ),
                 ),
               );
@@ -653,8 +725,12 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
               padding: const EdgeInsets.symmetric(vertical: 13),
               decoration: BoxDecoration(
                 color: _isPlaying
-                    ? (isDark ? AppColors.darkSecondary : const Color(0xFF6DFAD2))
-                    : (isDark ? AppColors.darkPrimary.withValues(alpha: 0.3) : const Color(0xFFE4DFFF)),
+                    ? (isDark
+                          ? AppColors.darkSecondary
+                          : const Color(0xFF6DFAD2))
+                    : (isDark
+                          ? AppColors.darkPrimary.withValues(alpha: 0.3)
+                          : const Color(0xFFE4DFFF)),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Row(
@@ -665,7 +741,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                     size: 20,
                     color: _isPlaying && isDark
                         ? AppColors.darkBackground
-                        : (isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8)),
+                        : (isDark
+                              ? AppColors.darkSecondary
+                              : const Color(0xFF4E3BC8)),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -673,7 +751,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                     style: TextStyle(
                       color: _isPlaying && isDark
                           ? AppColors.darkBackground
-                          : (isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8)),
+                          : (isDark
+                                ? AppColors.darkSecondary
+                                : const Color(0xFF4E3BC8)),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -686,7 +766,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFEEF5F7),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : const Color(0xFFEEF5F7),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -707,7 +789,9 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : Colors.black,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -721,8 +805,13 @@ class _ChordCardState extends ConsumerState<_ChordCard> {
                             height: active ? 8 : 6,
                             decoration: BoxDecoration(
                               color: active
-                                  ? (isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8))
-                                  : (isDark ? AppColors.darkTextSecondary.withValues(alpha: 0.4) : const Color(0xFFC7C4D7)),
+                                  ? (isDark
+                                        ? AppColors.darkSecondary
+                                        : const Color(0xFF4E3BC8))
+                                  : (isDark
+                                        ? AppColors.darkTextSecondary
+                                              .withValues(alpha: 0.4)
+                                        : const Color(0xFFC7C4D7)),
                               shape: BoxShape.circle,
                             ),
                           );
@@ -778,7 +867,9 @@ class _RelatedChordsSection extends StatelessWidget {
               'ESCALA ${entry.symbol.toUpperCase()}',
               style: TextStyle(
                 fontSize: 11,
-                color: isDark ? AppColors.darkSecondary : const Color(0xFF4E3BC8),
+                color: isDark
+                    ? AppColors.darkSecondary
+                    : const Color(0xFF4E3BC8),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -800,7 +891,9 @@ class _RelatedChordsSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.3 : 0.04,
+                          ),
                           blurRadius: 6,
                         ),
                       ],
@@ -812,7 +905,9 @@ class _RelatedChordsSection extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                            color: isDark
+                                ? AppColors.darkTextPrimary
+                                : Colors.black,
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -821,7 +916,9 @@ class _RelatedChordsSection extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 10.5,
-                            color: isDark ? AppColors.darkTextSecondary : const Color(0xFF767586),
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : const Color(0xFF767586),
                           ),
                         ),
                       ],
@@ -836,4 +933,3 @@ class _RelatedChordsSection extends StatelessWidget {
     );
   }
 }
-
