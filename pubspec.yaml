@@ -62,7 +62,7 @@ dependencies:
 
     sdk: flutter
 
-
+  flutter_soloud: ^5.1.2
 
   # Manejo de permisos en tiempo de ejecución
 
@@ -135,7 +135,17 @@ flutter:
     - assets/images/headstock_6_inline.webp
     - assets/images/picktuner_loader_guitar_blended.webp
     - assets/images/picktuner_isotipo.svg
-  
+
+    - assets/DAWs/Ableton/
+    - assets/DAWs/Cubase/
+    - assets/DAWs/FL Studio/
+    - assets/DAWs/Logic/
+    - assets/DAWs/Maschine/
+    - assets/DAWs/MPC/
+    - assets/DAWs/Pro Tools/Default/
+    - assets/DAWs/Pro Tools/Marimba/
+    - assets/DAWs/Reason/
+    - assets/DAWs/Sonar/
 
 
   # The following line ensures that the Material Icons font is
