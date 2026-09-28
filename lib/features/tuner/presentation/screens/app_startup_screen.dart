@@ -444,7 +444,7 @@ class FrequencyLoaderPainter extends CustomPainter {
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
     const gap = 8.0;
-    final totalWidth = gap * (bars.length - 1) + 4;
+    final totalWidth = gap * (bars.length - 1);
     final left = center.dx - totalWidth / 2;
 
     for (int i = 0; i < bars.length; i++) {

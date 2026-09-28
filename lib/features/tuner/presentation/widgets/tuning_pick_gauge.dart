@@ -53,7 +53,7 @@ class TuningPickGauge extends StatelessWidget {
                     Positioned(
                       left: needsTension
                           ? (xPos - 18 - 58).clamp(0.0, width - 66)
-                          : (xPos + 18).clamp(0.0, width - 66),
+                          : (xPos + 8 + 28).clamp(0.0, width - 66),
                       top: 34,
                       child: Text(
                         needsTension ? 'TENSAR' : 'DESTENSAR',
@@ -206,12 +206,12 @@ class GuitarPickPainter extends CustomPainter {
 
     // Las cinco líneas del isotipo, ahora también en la púa del indicador.
     final bars = <double>[0.25, 0.37, 0.50, 0.63, 0.75];
-    final halfHeights = <double>[0.065, 0.140, 0.230, 0.140, 0.060];
-    final centerY = h * 0.480;
+    final halfHeights = <double>[0.105, 0.205, 0.315, 0.205, 0.105];
+    final centerY = h * 0.460;
 
     final Paint barPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = w * 0.040
+      ..strokeWidth = w * 0.055
       ..strokeCap = StrokeCap.round
       ..shader = LinearGradient(
         begin: Alignment.topCenter,

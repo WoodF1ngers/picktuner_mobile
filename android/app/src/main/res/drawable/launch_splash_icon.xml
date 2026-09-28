@@ -1,4 +1,4 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="72dp"
     android:height="72dp"
     android:viewportWidth="100"
@@ -15,4 +15,57 @@
         android:strokeWidth="5"
         android:strokeLineCap="round"
         android:pathData="M34,55 L34,45 M44,61 L44,39 M54,67 L54,33 M64,58 L64,42" />
+</vector> -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Silueta basada en pick_tuner_brand.dart -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#585AE8"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M50,1.2
+            C76,1.2 96,8.5 98.5,24.5
+            C101,43.5 91,68 72,86.5
+            C63,95 55,99 50,99.8
+            C45,99 37,95 28,86.5
+            C9,68 -1,43.5 1.5,24.5
+            C4,8.5 24,1.2 50,1.2
+            Z" />
+
+    <!-- Cinco barras internas:
+         x = 0.25 / 0.37 / 0.50 / 0.63 / 0.75
+         centerY = 0.460
+         halfHeights = 0.105 / 0.205 / 0.315 / 0.205 / 0.105 -->
+   <!-- Cuatro barras laterales -->
+<path
+    android:fillColor="@android:color/transparent"
+    android:strokeColor="#07B097"
+    android:strokeWidth="4.5"
+    android:strokeLineCap="round"
+    android:strokeLineJoin="round"
+    android:pathData="
+        M25,35.5 L25,56.5
+        M37,25.5 L37,66.5
+        M63,25.5 L63,66.5
+        M75,35.5 L75,56.5" />
+
+<!-- Barra central con extremos perfectamente ovalados -->
+<path
+    android:fillColor="#07B097"
+    android:pathData="
+        M50,14.5
+        C48.757,14.5 47.75,15.507 47.75,16.75
+        L47.75,75.25
+        C47.75,76.493 48.757,77.5 50,77.5
+        C51.243,77.5 52.25,76.493 52.25,75.25
+        L52.25,16.75
+        C52.25,15.507 51.243,14.5 50,14.5
+        Z" />
 </vector>
